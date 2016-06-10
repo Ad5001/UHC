@@ -30,7 +30,7 @@ class UHCWorld {
         $this->radius = $radius;
     }
     public function getLevel() {
-        return $this->level;
+        return $this->lvl;
     }
     public function getName() {
         return $this->name;
@@ -53,6 +53,7 @@ class UHCWorld {
             if(!in_array($player, $players)){
                 foreach($this->players as $pl) {
                     $pl->sendMessage(Main::PREFIX . C::YELLOW . "{$player->getName()} joined the game.");
+                    $part = new TextParticle(new FloatingTextParticle(new Vector3($this->x, $this->y, $this->z), C::GREEN . "Welcome to the UHC {$player->getName()} !\n" . C::GREEN . "To get help about the plugin , please type command /uhc howtoplay .", C::YELLOW . "-=<UHC>=-"), $this->level, $player);
                 }
             }
         }

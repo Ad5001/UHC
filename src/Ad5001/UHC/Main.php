@@ -12,14 +12,21 @@ use pocketmine\command\Command;
 use pocketmine\event\Listener;
 use pocketmine\event\level\LevelLoadEvent;
 use pocketmine\event\player\PlayerJoinEvent;
+use pocketmine\event\player\PlayerDeathEvent;
+use pocketmine\event\player\PlayerChatEvent;
+use pocketmine\event\player\PlayerQuitEvent;
+use pocketmine\event\player\PlayerRespawnEvent;
+use pocketmine\event\entity\EntityRegainHealthEvent;
 use pocketmine\plugin\PluginBase;
 use pocketmine\Server;
 use pocketmine\Player;
+use pocketmine\event\entity\EntityLevelChangeEvent;
 use pocketmine\utils\TextFormat as C;
  
 use Ad5001\UHC\UHCWorld;
 use Ad5001\UHC\UHCGame;
 use Ad5001\UHC\task\FetchPlayersTask;
+use Ad5001\UHC\task\StartGameTask;
 use Ad5001\UHC\event\GameStartEvent;
 use Ad5001\UHC\event\GameFinishEvent;
 class Main extends PluginBase implements Listener{
@@ -28,12 +35,13 @@ class Main extends PluginBase implements Listener{
     
     
     public function startGame(UHCWorld $world) {
-        $this->games[$world->getName()] = new UHCGame($this, $world);
+        $ft = $this->getServer()->getScheduler()->scheduleRepeatingTask(new StartGameTask($this, $world), 20);
+        // $this->games[$world->getName()] = new UHCGame($this, $world);
     } 
     
     
     
-    public function onLevelChange(\pocketmine\event\entity\EntityLevelChangeEvent $event) {
+    public function onLevelChange(EntityLevelChangeEvent $event) {
         foreach($this->worlds as $world) {
             if($event->getLevel()->getName() === $world->getName() and !isset($this->games[$world->getName()])) {
                 if(count($world->getLevel()->getPlayers) > $world->maxplayers) {
@@ -59,9 +67,13 @@ class Main extends PluginBase implements Listener{
     public function onPlayerJoin(PlayerJoinEvent $event) {
         if(!isset($this->ft)) {
             $this->ft = $this->getServer()->getScheduler()->scheduleRepeatingTask(new FetchPlayersTask($this, $this->worlds), 10);
+            foreach($this->getConfig()->get("worlds") as $lvl) {
+                $this->worlds[$lvl["name"]] = new UHCWorld($this, $this->getServer()->getLevelByName($lvl["name"]), $lvl["name"], $lvl["maxplayers"], $lvl["radius"]);
+                $this->getLogger()->debug("Processing {$lvl["name"]}");
+            }
         }
-        } elseif(isset($this->quit[$event->getPlayer()])) {
-                $quit = explode("/", $this->quit[$event->getPlayer()]);
+        if(isset($this->quit[$event->getPlayer()->getName()])) {
+                $quit = explode("/", $this->quit[$event->getPlayer()->getName()]);
                 $event->getPlayer()->teleport($this->getServer()->getLevelByName($quit[4]));
                 $event->getPlayer()->teleport(new Vector3($quit[0], $quit[1], $quit[2]));
                 foreach($world->getLevel()->getPlayers() as $player) {
@@ -73,15 +85,6 @@ class Main extends PluginBase implements Listener{
     
     
     
-    public function onLevelLoad(LevelLoadEvent $event) {
-        foreach($this->getConfig()->get("worlds") as $lvl) {
-            $this->getLogger()->debug("Processing $lvl");
-            if($event->getLevel()->getName() === $lvl["name"]) {
-                $this->world[$lvl["name"]] = new UHCWorld($this, $this->getServer()->getLevelByName($lvl), $lvl["name"], $lvl["maxplayers"], $lvl["radius"]);
-                $this->getLogger()->debug("Processing $lvl = {$event->getLevel()->getName()}");
-            }
-        }
-    }
     public function onEnable(){
         $this->reloadConfig();
         $this->getServer()->getPluginManager()->registerEvents($this, $this);
@@ -98,7 +101,29 @@ $this->reloadConfig();
 $this->saveDefaultConfig();
 }
 
+public function onRespawn(PlayerRespawnEvent $event) {
+    foreach($this->games as $game) {
+        $game->onRespawn($event);
+    }
+}
 
+public function onPlayerQuit(PlayerQuitEvent $event) {
+    foreach($this->games as $game) {
+        $game->onPlayerQuit($event);
+    }
+}
+
+public function onPlayerDeath(PlayerDeathEvent $event) {
+    foreach($this->games as $game) {
+        $game->onPlayerDeath($event);
+    }
+}
+
+public function onHeal(EntityRegainHealthEvent $event) {
+    foreach($this->games as $game) {
+        $game->onHeal($event);
+    }
+}
 
 
  public function onCommand(CommandSender $sender, Command $cmd, $label, array $args){
@@ -108,7 +133,7 @@ switch($cmd->getName()){
         switch($args[0]) {
             case "start":
             if(isset($this->worlds[$sender->getLevel()->getName()]) and !isset($this->games[$sender->getLevel()->getName()])) {
-                $this->getLogger()->debug("Starting game {$this->worlds[$sender->getLevel()->getName()]}");
+                $this->getLogger()->debug("Starting game {$sender->getLevel()->getName()}");
                 foreach($sender->getLevel()->getPlayers() as $player) {
                     $player->sendMessage(self::PREFIX . "Starting game...");
                 }

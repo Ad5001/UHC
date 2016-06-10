@@ -6,4 +6,4 @@ worlds:
    nether:
       name: nether
       maxplayers: 8
-      raduis: 1000
+      radius: 1000

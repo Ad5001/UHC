@@ -11,14 +11,14 @@ use pocketmine\command\CommandSender;
 use pocketmine\command\Command;
 use pocketmine\event\Listener;
 use pocketmine\Server;
-use pocketmine\level\Level;
-use pocketmine\plugin\Plugin;
-use pocketmine\math\Vector3;
 use pocketmine\event\player\PlayerDeathEvent;
 use pocketmine\event\player\PlayerChatEvent;
 use pocketmine\event\player\PlayerQuitEvent;
 use pocketmine\event\player\PlayerRespawnEvent;
 use pocketmine\event\entity\EntityRegainHealthEvent;
+use pocketmine\level\Level;
+use pocketmine\plugin\Plugin;
+use pocketmine\math\Vector3;
 use pocketmine\utils\TextFormat as C;
 use pocketmine\Player;
 
@@ -36,8 +36,9 @@ class UHCGame implements Listener{
     public function __construct(Plugin $plugin, UHCWorld $world) {
         $this->m = $plugin;
         $this->world = $world;
-        $this->players = $world->getPlayers();
-        $event = $this->getServer()->getPluginManager()->callEvent(new GameStartEvent($this, $world, $this->players));
+        $this->players = $world->getLevel()->getPlayers();
+        $event = new GameStartEvent($this, $world, $this->players);
+        $this->m->getServer()->getPluginManager()->callEvent($event);
         $this->cancelled = false;
         $this->kills = [];
         if($event->isCancelled()) {
@@ -45,20 +46,19 @@ class UHCGame implements Listener{
         } else {
             $radius = $world->radius;
             foreach($this->players as $player) {
-                $x = rand($radius + $world->getLevel()->getDefaultSpawn(), $world->getLevel()->getDefaultSpawn() - $radius);
-                $z = rand($radius + $world->getLevel()->getDefaultSpawn(), $world->getLevel()->getDefaultSpawn() - $radius);
+                $x = rand($radius + $world->getLevel()->getSpawnLocation()->x, $world->getLevel()->getSpawnLocation()->x - $radius);
+                $z = rand($radius + $world->getLevel()->getSpawnLocation()->z, $world->getLevel()->getSpawnLocation()->z - $radius);
                 $pos = new Vector3($x, 128, $z);
                 $player->teleport($pos);
                 $effect = \pocketmine\entity\Effect::getEffect(11);
-                $effect->setDuration(30);
+                $effect->setDuration(30*20);
                 $effect->setAmplifier(99);
                 $effect->setVisible(false);
                 $player->addEffect($effect);
-                $this->m->getServer()->getScheduler()->scheduleDelayedTask(new StopResTask($this, $this->worlds), 30*20);
+                $this->m->getServer()->getScheduler()->scheduleDelayedTask(new StopResTask($this, $this->world), 30*20);
                 $player->sendMessage(Main::PREFIX . C::GREEN . "Game started ! Good luck {$player->getName()} !");
             }
         }
-        Server::getInstance()->getPluginManager()->registerEvents($this, $this);
     }
     
     
@@ -146,11 +146,20 @@ class UHCGame implements Listener{
     
     public function onPlayerChat(PlayerChatEvent $event) {
         if($event->getPlayer()->getLevel()->getName() === $this->world->getLevel()->getName() and $event->getPlayer()->getGamemode() === 3) {
-            foreach($this->world->getLevel()->getPlayer())
+            if($event->getPlayer()->isSpectator()) {
+                foreach($this->world->getLevel()->getPlayer() as $player) {
+                    $player->sendMessage(C::GRAY . "[SPECTATOR] {$event->getPlayer()->getName()} > " . $event->getMessage());
+                    
+                }
+                $event->setCancelled(true);
+            }
         }
     }
     
-    
+    /*
+    Will be useful for scenarios:
+    @param player
+    */
     public function getKills(Player $player) {
         if(isset($this->kills[$player->getName()])) {
             return $this->kills[$player->getName()];

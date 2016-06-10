@@ -26,13 +26,33 @@ class StartGameTask extends PluginTask {
         parent::__construct($main);
         $this->main = $main;
         $this->world = $world;
-        $this->seconds = 0;
+        $this->seconds = 30;
+        $this->close = false;
     }
+    
+    
+    public function close() {
+        $this->close = true;
+    }
+    
+    
     public function onRun($tick) {
+        if(!$this->close) {
+        $this->main->getLogger()->debug($this->seconds);
         switch($this->seconds) {
             case 30:
             foreach($this->world->getLevel()->getPlayers() as $player) {
                 $player->sendMessage(Main::PREFIX . C::YELLOW . "30 seconds before the game starts");
+            }
+            break;
+            case 20:
+            foreach($this->world->getLevel()->getPlayers() as $player) {
+                $player->sendMessage(Main::PREFIX . C::YELLOW . "20 seconds before the game starts");
+            }
+            break;
+            case 15:
+            foreach($this->world->getLevel()->getPlayers() as $player) {
+                $player->sendMessage(Main::PREFIX . C::YELLOW . "15 seconds before the game starts");
             }
             break;
             case 10:
@@ -67,8 +87,11 @@ class StartGameTask extends PluginTask {
             break;
             case 0:
             $this->main->games[$this->world->getLevel()->getName()] = new UHCGame($this->main, $this->world);
+            $this->close();
+            $this->seconds = -1;
             break;
         }
         $this->seconds--;
+    }
     }
 }

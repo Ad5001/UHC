@@ -6,20 +6,20 @@
 # | |__| | |  | | |____ 
 #  \____/|_|  |_|\_____|
 # The most customisable UHC plugin for Minecraft PE !
-namespace Ad5001\UHC\events;
+namespace Ad5001\UHC\event;
 use pocketmine\event\Cancellable.php;
-use Ad5001\UHC\events\UHCEvent;
+use Ad5001\UHC\event\UHCEvent;
 use Ad5001\UHC\UHCGame;
 use Ad5001\UHC\UHCWorld;
 
 protected $game;
 protected $world;
-protected $players;
-class GameStartEvent extends UHCEvent implements Cancellable {
-    public function __construct($game, $world, $players) {
+protected $winner;
+class GameFinishEvent extends UHCEvent implements Cancellable {
+    public function __construct($game, $world, $winner) {
         $this->game = $game;
         $this->world = $world;
-        $this->players = $players;
+        $this->winner = $winner;
     }
     public function getWorld() {
         return $this->world;
@@ -27,7 +27,10 @@ class GameStartEvent extends UHCEvent implements Cancellable {
     public function getLevel() {
         return $this->world;
     }
-    public function getPlayers() {
-        return $this->players;
+    public function getWinner() {
+        return $this->winner;
+    }
+    public function setWinner(Player $winner) {
+        $this->winner = $winner;
     }
 }
