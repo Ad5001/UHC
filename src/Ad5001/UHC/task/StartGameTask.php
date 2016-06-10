@@ -82,7 +82,7 @@ class StartGameTask extends PluginTask {
             break;
             case 1:
             foreach($this->world->getLevel()->getPlayers() as $player) {
-                $player->sendMessage(Main::PREFIX . C::YELLOW . "1 seconds before the game starts");
+                $player->sendMessage(Main::PREFIX . C::YELLOW . "1 second before the game starts");
             }
             break;
             case 0:
