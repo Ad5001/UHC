@@ -9,7 +9,7 @@ This is a recreation of the well known UHC for Minecraft PE servers software in 
 **This plugins allows you:**
  - Creating simple but highly customisable UHC matchs
  - MultiWorld Compatibility
- - Scenario compatible ! [What are scenarios](wiki/scenarios)    
+ - Scenario compatible ! [What are scenarios](wiki/What-are-Scenarios%3F)    
     
 Current complete features:
 [WIP] Playing UHC (damage without regen and golden apples)        
