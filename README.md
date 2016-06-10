@@ -12,8 +12,8 @@ This is a recreation of the well known UHC for Minecraft PE servers software in 
  - Scenario compatible ! [What are scenarios](wiki/scenarios)    
     
 Current complete features:
-[WIP] Playing UHC (damage without regen and golden apples)   
-[x] MultiWorld compatible
-[WIP] Scenario working
-[x] Full spectator mode
-[WIP] Events
+[WIP] Playing UHC (damage without regen and golden apples)        
+[x] MultiWorld compatible     
+[WIP] Scenario working     
+[x] Full spectator mode     
+[WIP] Events     
