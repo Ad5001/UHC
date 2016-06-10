@@ -163,6 +163,25 @@ switch($cmd->getName()){
         }
     }
     break;
+    case "scenarios" {
+        if(isset($args[2])) {
+             if(isset($this->worlds[$sender->getLevel()->getName()]) and !isset($this->games[$sender->getLevel()->getName()])) {
+                 if(file_exists($this->getDataFolder() . "scenarios/" . $args[2] . ".php")) { // yes, I'm treating args[2] before args[1] but who cares x) ?
+                     switch($args[1]) {
+                         case "add":
+                         $sl = new \pocketmine\plugin\ScriptPluginLoader($this->getServer());
+                         $scenarios[$args[2]] = $sl->load(realpath($this->getDataFolder() . "scenarios/" . $args[2] . ".php"));
+                         $scenarios[$args[2]]->onEnable();
+                         break;
+                         case "remove":
+                         $scenarios[$args[2]]->onStop();
+                         unset($scenarios[$args[2]]);
+                         break;
+                     }
+                 }
+             }
+        }
+    }
 }
 return false;
  }
