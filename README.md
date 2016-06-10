@@ -1,12 +1,12 @@
 PLEASE NOTE THAT THE PLUGIN IS ***NOT*** COMPLETE YET ! SO DON4T USE THIS IN A PRODUCTION ENVIRONNEMENT!    
 
-#  _    _ _    _  _____ 
-# | |  | | |  | |/ ____|
-# | |  | | |__| | |     
-# | |  | |  __  | |     
-# | |__| | |  | | |____ 
-#  \____/|_|  |_|\_____|
-# The most customisable UHC plugin for Minecraft PE !
+ _    _ _    _  _____ 
+| |  | | |  | |/ ____|
+| |  | | |__| | |     
+| |  | |  __  | |     
+| |__| | |  | | |____ 
+ \____/|_|  |_|\_____|
+ The most customisable UHC plugin for Minecraft PE !
 
 Welcome here owner/player ! You may know what the UHC is but if not, read carfully [this](wiki/What-is-UHC).    
 This is a recreation of the well known UHC for Minecraft PE servers software in PHP!    
