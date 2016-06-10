@@ -5,7 +5,7 @@
 # | |  | |  __  | |     
 # | |__| | |  | | |____ 
 #  \____/|_|  |_|\_____|
-# The most customisable UHC plugin for Minecraft PE !
+# The most customisable UHC plugin for Minecraft PE!
 namespace Ad5001\UHC ; 
 use pocketmine\command\CommandSender;
 use pocketmine\command\Command;
@@ -45,7 +45,7 @@ class UHCWorld {
         foreach($players as $player) {
             if(!in_array($player, $this->players)){
                 foreach($this->players as $pl) {
-                    $pl->sendMessage(Main::PREFIX . C::YELLOW . "{$player->getName()} leaved the game.");
+                    $pl->sendMessage(Main::PREFIX . C::YELLOW . "{$player->getName()} left the game.");
                 }
             }
         }
