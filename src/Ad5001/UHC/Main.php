@@ -5,7 +5,7 @@
 # | |  | |  __  | |     
 # | |__| | |  | | |____ 
 #  \____/|_|  |_|\_____|
-# The most customisable UHC plugin for Minecraft PE !
+# The most customisable UHC plugin for Minecraft PE!
 namespace Ad5001\UHC ; 
 use pocketmine\command\CommandSender;
 use pocketmine\command\Command;
@@ -150,7 +150,7 @@ switch($cmd->getName()){
                         $player = $this->getServer()->getPlayer($args[1]);
                         $sender->teleport(new Vector3($player->x, $player->y, $player->z), $player->yaw, $player->pitch);
                     } else {
-                        $sender->sendMessage(self::PREFIX . "Player {$args[1]} does NOT exists");
+                        $sender->sendMessage(self::PREFIX . "Player {$args[1]} does NOT exist!");
                     }
                 }  else {
                         $sender->sendMessage(self::PREFIX . "Usage: /uhc tp <player>");
