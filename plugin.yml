@@ -1,0 +1,22 @@
+---
+#  _    _ _    _  _____ 
+# | |  | | |  | |/ ____|
+# | |  | | |__| | |     
+# | |  | |  __  | |     
+# | |__| | |  | | |____ 
+#  \____/|_|  |_|\_____|
+# The most customisable UHC plugin for Minecraft PE !
+name: UHC
+author:  Ad5001
+version: 1.0
+api: [2.0.0]
+main: Ad5001\UHC\Main
+commands: 
+   uhc:
+     description: Main UHC command
+     usage: /uhc <sub-command> [params]
+     permission: uhc.command.main
+permissions:
+   uhc.command.main:
+     default: op
+...
