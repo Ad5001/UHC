@@ -13,6 +13,9 @@ use pocketmine\Player;
 use pocketmine\level\Level;
 
 
+use Ad5001\UHC\task\StartGameTask;
+
+
 
 class UHCManager {
 
@@ -36,10 +39,12 @@ class UHCManager {
 
     public function startUHC(Level $level) {
         if(isset($this->levels[$level->getName()]) and !isset($this->startedgames[$level->getName()])) {
-            $ft = $this->main->getServer()->getScheduler()->scheduleRepeatingTask($t = new StartGameTask($this, $this->levels[$level->getName()]), 20);
+            $ft = $this->main->getServer()->getScheduler()->scheduleRepeatingTask($t = new StartGameTask($this->main, $this->levels[$level->getName()]), 20);
             $t->setHandler($ft);
             $this->startedgames[$level->getName()] = true;
-            $this->levels[$level->getName()]->onUHCStart();
+            foreach($this->levels[$level->getName()]->scenarioManager->getScenarios() as $sc) {
+                $sc->onStart();
+            }
             return true;
         }
         return false;
@@ -50,7 +55,9 @@ class UHCManager {
     public function stopUHC(Level $level) {
         if(isset($this->startedgames[$level->getName()])) {
             unset($this->startedgames[$level->getName()]);
-            $this->levels[$level->getName()]->onUHCStop();
+            foreach($this->levels[$level->getName()]->scenarioManager->getScenarios() as $sc) {
+                $sc->onQuit();
+            }
             return true;
         }
         return false;
@@ -61,8 +68,6 @@ class UHCManager {
     public function registerLevel(Level $level) {
         if(!array_key_exists($level->getName(), $this->levels)) {
             $this->levels[$level->getName()] = new UHCWorld($this->main,$level,$this->main->getConfig()->get("worlds")[$level->getName()]["maxplayers"],$this->main->getConfig()->get("worlds")[$level->getName()]["radius"]);
-        } else {
-            $this->main->getLogger()->warning("{$level->getName()} is already registered.");
         }
     }
 

@@ -56,7 +56,7 @@ class UHCGame implements Listener{
                 $effect->setAmplifier(99);
                 $effect->setVisible(false);
                 $player->addEffect($effect);
-                $this->m->getServer()->getScheduler()->scheduleDelayedTask(new StopResTask($this, $this->world), 30*20);
+                $this->m->getServer()->getScheduler()->scheduleDelayedTask(new StopResTask($this->m, $this->world->getPlayers()), 30*20);
                 $player->sendMessage(Main::PREFIX . C::GREEN . "Game started ! Good luck {$player->getName()} !");
             }
         }
@@ -64,10 +64,16 @@ class UHCGame implements Listener{
     
     
     public function onHeal(EntityRegainHealthEvent $event) {
-        if($event->getEntity() instanceof Player and $event->getRegainReason() === EntityRegainHealthEvent::CAUSE_SATURATION and $event->getEntity()->getLevel()->getName() === $world->getLevel()->getName()) { // if player is playing
+        if($event->getEntity() instanceof Player and $event->getRegainReason() === EntityRegainHealthEvent::CAUSE_SATURATION and $event->getEntity()->getLevel()->getName() === $this->world->getLevel()->getName()) { // if player is playing
             $event->setCancelled();
         }
     }
+
+
+    public function onGameStart(\Ad5001\UHC\event\GameStartEvent $event) {}
+
+
+    public function onGameStop(\Ad5001\UHC\event\GameStopEvent $event) {}
     
     
     public function onRespawn(PlayerRespawnEvent $event) {

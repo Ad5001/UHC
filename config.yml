@@ -1,7 +1,4 @@
 worlds:
-   world:
-        maxplayers: 8
-        radius: 1000
    uhc:
         maxplayers: 8
         radius: 1000

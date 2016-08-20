@@ -40,13 +40,13 @@ class Main extends PluginBase implements Listener{
     public function onLevelChange(EntityLevelChangeEvent $event) {
         foreach($this->UHCManager->getLevels() as $world) {
             if($event->getTarget()->getName() === $world->getName() and !isset($this->games[$world->getName()])) {
-                if(count($world->getLevel()->getPlayers) > $world->maxplayers) {
+                if(count($world->getLevel()->getPlayers()) > $world->maxplayers) {
                     $event->setCancelled();
                 }
-            } elseif($event->getLevel()->getName() === $world->getName() and isset($this->games[$world->getName()]) and !isset($this->quit[$event->getPlayer()])) {
+            } elseif($event->getTarget()->getName() === $world->getName() and isset($this->games[$world->getName()]) and !isset($this->quit[$event->getEntity()])) {
                 $event->getPlayer()->setGamemode(3);
-            } elseif($event->getLevel()->getName() === $world->getName() and isset($this->games[$world->getName()]) and isset($this->quit[$event->getPlayer()])) {
-                $quit = explode("/", $this->quit[$event->getPlayer()]);
+            } elseif($event->getTarget()->getName() === $world->getName() and isset($this->games[$world->getName()]) and isset($this->quit[$event->getEntity()])) {
+                $quit = explode("/", $this->quit[$event->getEntity()]);
                 if($quit[3] === $world->getName()) {
                     $event->getPlayer()->teleport(new Vector3($quit[0], $quit[1], $quit[2]));
                     foreach($world->getLevel()->getPlayers() as $player) {
@@ -210,13 +210,13 @@ return false;
 
    public function onEntityLevelChange(EntityLevelChangeEvent $event) {
        if(isset($this->UHCManager->getLevels()[$event->getOrigin()->getName()]) and $event->getEntity() instanceof Player) {
-           foreach($this->UHCManager->getLevels()[$event->getPlayer()->getLevel()->getName()]->scenarioManager->getScenarios() as $sc) {
+           foreach($this->UHCManager->getLevels()[$event->getOrigin()->getName()]->scenarioManager->getScenarios() as $sc) {
                $sc->onQuit($event->getPlayer());
            }
        }
        if(isset($this->UHCManager->getLevels()[$event->getTarget()->getName()]) and $event->getEntity() instanceof Player) {
-           foreach($this->UHCManager->getLevels()[$event->getPlayer()->getLevel()->getName()]->scenarioManager->getScenarios() as $sc) {
-               $sc->onJoin($event->getPlayer());
+           foreach($this->UHCManager->getLevels()[$event->getTarget()->getName()]->scenarioManager->getScenarios() as $sc) {
+               $sc->onJoin($event->getEntity());
            }
        }
    }
@@ -313,7 +313,7 @@ return false;
 
    public function onEntityDamage(\pocketmine\event\entity\EntityDamageEvent $event) {
        if(isset($this->UHCManager->getLevels()[$event->getEntity()->getLevel()->getName()])) {
-           foreach($this->UHCManager->getLevels()[$event->getPlayer()->getLevel()->getName()]->scenarioManager->getScenarios() as $sc) {
+           foreach($this->UHCManager->getLevels()[$event->getEntity()->getLevel()->getName()]->scenarioManager->getScenarios() as $sc) {
                $sc->onEntityDamage($event);
            }
        }
@@ -321,7 +321,8 @@ return false;
 
 
    public function onProjectileLaunch(\pocketmine\event\entity\ProjectileLaunchEvent $event) {
-       if(isset($this->UHCManager->getLevels()[$event->getEntity()->getLevel()->getName()])) {foreach($this->UHCManager->getLevels()[$event->getPlayer()->getLevel()->getName()]->scenarioManager->getScenarios() as $sc) {
+       if(isset($this->UHCManager->getLevels()[$event->getEntity()->getLevel()->getName()])) {
+           foreach($this->UHCManager->getLevels()[$event->getEntity()->getLevel()->getName()]->scenarioManager->getScenarios() as $sc) {
                $sc->onProjectileLaunch($event);
            }
        }
@@ -330,7 +331,7 @@ return false;
 
    public function onProjectileHit(\pocketmine\event\entity\ProjectileHitEvent $event) {
        if(isset($this->UHCManager->getLevels()[$event->getEntity()->getLevel()->getName()])) {
-           foreach($this->UHCManager->getLevels()[$event->getPlayer()->getLevel()->getName()]->scenarioManager->getScenarios() as $sc) {
+           foreach($this->UHCManager->getLevels()[$event->getEntity()->getLevel()->getName()]->scenarioManager->getScenarios() as $sc) {
                $sc->onProjectileHit($event);
            }
        }
@@ -390,4 +391,10 @@ return false;
            }
        }
    }
+
+
+    public function onGameStart(\Ad5001\UHC\event\GameStartEvent $event) {}
+
+
+    public function onGameStop(\Ad5001\UHC\event\GameStopEvent $event) {}
 }

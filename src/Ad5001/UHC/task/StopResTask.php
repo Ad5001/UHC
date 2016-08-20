@@ -22,7 +22,7 @@ use Ad5001\UHC\Main;
 
 class StopResTask extends PluginTask {
     public function __construct(Plugin $plugin, array $players) {
-        parent::__construct($this);
+        parent::__construct($plugin);
         $this->m = $plugin;
         $this->players = $players;
     }
