@@ -1,5 +1,5 @@
 <?php
-namespace Ad5001\UHC;
+namespace Ad5001\UHC\scenario;
 #  _    _ _    _  _____ 
 # | |  | | |  | |/ ____|
 # | |  | | |__| | |     
@@ -11,6 +11,9 @@ namespace Ad5001\UHC;
 use pocketmine\Server;
 use pocketmine\Player;
 use pocketmine\level\Level;
+use Ad5001\UHC\Main;
+use Ad5001\UHC\UHCWorld;
+use Ad5001\UHC\UHCGame;
 
 
 

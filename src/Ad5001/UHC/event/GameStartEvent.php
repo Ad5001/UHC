@@ -14,10 +14,13 @@ use Ad5001\UHC\UHCWorld;
 
 
 class GameStartEvent extends UHCEvent implements Cancellable {
+
+    public static $handlerList = null;
+
     protected $game;
     protected $world;
     protected $players;
-    static $handlerList = null;
+
     public function __construct($game, $world, $players) {
         $this->game = $game;
         $this->world = $world;

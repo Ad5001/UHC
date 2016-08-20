@@ -7,17 +7,18 @@
 #  \____/|_|  |_|\_____|
 # The most customisable UHC plugin for Minecraft PE !
 namespace Ad5001\UHC\event;
-use pocketmine\event\Cancellable.php;
+use pocketmine\event\Cancellable;
 use Ad5001\UHC\event\UHCEvent;
 use Ad5001\UHC\UHCGame;
 use Ad5001\UHC\UHCWorld;
 
-protected $game;
-protected $world;
-protected $winner;
-
 
 class GameStopEvent extends UHCEvent implements Cancellable {
+    protected $game;
+    protected $world;
+    protected $winner;
+
+    public static $handlerList = null;
 
 
 
@@ -42,7 +43,7 @@ class GameStopEvent extends UHCEvent implements Cancellable {
         return $this->winner;
     }
 
-    
+
     public function setWinner(Player $winner) {
         $this->winner = $winner;
     }

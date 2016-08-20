@@ -14,8 +14,11 @@ main: Ad5001\UHC\Main
 commands: 
    uhc:
      description: Main UHC command
-     usage: /uhc <sub-command> [params]
+     usage: "/uhc <sub-command> [params]"
      permission: uhc.command.main
+   scenarios:
+     description: Manage UHC scenarios
+     usage: "/scenarios [add | remove | list] [scenario]"
 permissions:
    uhc.command.main:
      default: op

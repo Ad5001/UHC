@@ -1,9 +1,7 @@
 worlds:
    world:
-        name: world
         maxplayers: 8
         radius: 1000
-   nether:
-        name: nether
+   uhc:
         maxplayers: 8
         radius: 1000

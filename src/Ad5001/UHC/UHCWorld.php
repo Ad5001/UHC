@@ -44,7 +44,7 @@ class UHCWorld {
 
 
     public function getName() {
-        return $this->level->getName();
+        return $this->lvl->getName();
     }
 
 

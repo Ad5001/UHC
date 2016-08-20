@@ -18,6 +18,7 @@ use pocketmine\event\player\PlayerQuitEvent;
 use pocketmine\event\player\PlayerRespawnEvent;
 use pocketmine\event\entity\EntityRegainHealthEvent;
 use pocketmine\item\Item;
+use pocketmine\block\Block;
 use pocketmine\plugin\PluginBase;
 use pocketmine\Server;
 use pocketmine\Player;
@@ -38,7 +39,7 @@ class Main extends PluginBase implements Listener{
     
     public function onLevelChange(EntityLevelChangeEvent $event) {
         foreach($this->UHCManager->getLevels() as $world) {
-            if($event->getLevel()->getName() === $world->getName() and !isset($this->games[$world->getName()])) {
+            if($event->getTarget()->getName() === $world->getName() and !isset($this->games[$world->getName()])) {
                 if(count($world->getLevel()->getPlayers) > $world->maxplayers) {
                     $event->setCancelled();
                 }
@@ -57,29 +58,12 @@ class Main extends PluginBase implements Listener{
     }
     
     
-    
-    
-    public function onPlayerJoin(PlayerJoinEvent $event) {
-        if(!isset($this->ft)) {
-            $this->ft = $this->getServer()->getScheduler()->scheduleRepeatingTask(new FetchPlayersTask($this, $this->worlds), 10);
-        }
-        if(isset($this->quit[$event->getPlayer()->getName()])) {
-                $quit = explode("/", $this->quit[$event->getPlayer()->getName()]);
-                $event->getPlayer()->teleport($this->getServer()->getLevelByName($quit[4]));
-                $event->getPlayer()->teleport(new Vector3($quit[0], $quit[1], $quit[2]));
-                foreach($world->getLevel()->getPlayers() as $player) {
-                    $player->sendMessage(self::PREFIX . C::GREEN . "{$event->getPlayer()->getName()} back to game !");
-                }
-        }
-    }
-    
-    
     public function onEnable(){
         $this->saveDefaultConfig();
-        mkdir($this->getDataFolder() . "scenarios");
+        @mkdir($this->getDataFolder() . "scenarios");
         $this->getServer()->getPluginManager()->registerEvents($this, $this);
-        $this->getServer()->getPluginManager()->registerEvent("\Ad5001\UHC\event\GameStartEvent", $this, \pocketmine\plugin\EventPriority::NORMAL, new \pocketmine\plugin\MethodEventExecutor("onGameStart"), $this, true);
-        $this->getServer()->getPluginManager()->registerEvent("\Ad5001\UHC\event\GameStopEvent", $this, \pocketmine\plugin\EventPriority::NORMAL, new \pocketmine\plugin\MethodEventExecutor("onGameStop"), $this, true);
+        $this->getServer()->getPluginManager()->registerEvent("Ad5001\\UHC\\event\\GameStartEvent", $this, \pocketmine\event\EventPriority::NORMAL, new \pocketmine\plugin\MethodEventExecutor("onGameStart"), $this, true);
+        $this->getServer()->getPluginManager()->registerEvent("Ad5001\\UHC\\event\\GameStopEvent", $this, \pocketmine\event\EventPriority::NORMAL, new \pocketmine\plugin\MethodEventExecutor("onGameStop"), $this, true);
         $this->UHCManager = new UHCManager($this);
         $this->games = [];
         $this->quit = [];
@@ -100,19 +84,19 @@ switch($cmd->getName()){
     if(isset($args[0]) and $sender instanceof Player) {
         switch($args[0]) {
             case "start":
-            if(isset($this->UHCMananger->getLevels()[$sender->getLevel()->getName()]) and !isset($this->UHCMananger->getStartedUHCs()[$sender->getLevel()->getName()])) {
+            if(isset($this->UHCManager->getLevels()[$sender->getLevel()->getName()]) and !isset($this->UHCManager->getStartedUHCs()[$sender->getLevel()->getName()])) {
                 $this->getLogger()->debug("Starting game {$sender->getLevel()->getName()}");
                 foreach($sender->getLevel()->getPlayers() as $player) {
                     $player->sendMessage(self::PREFIX . "Starting game...");
                 }
-                $this->UHCMananger->startUHC($sender->getLevel());
+                $this->UHCManager->startUHC($sender->getLevel());
             } else {
                 $sender->sendMessage("You are not in a UHC world or UHC is already started");
             }
             return true;
             break;
             case "stop":
-            if(isset($this->UHCMananger->getStartedUHCs()[$sender->getLevel()->getName()])) {
+            if(isset($this->UHCManager->getStartedUHCs()[$sender->getLevel()->getName()])) {
                 $this->getLogger()->debug("Starting game {$sender->getLevel()->getName()}");
                 foreach($sender->getLevel()->getPlayers() as $player) {
                     $player->sendMessage(self::PREFIX . "Starting game...");
@@ -128,13 +112,13 @@ switch($cmd->getName()){
     break;
     case "scenarios":
         if(isset($args[0]) and $sender instanceof Player) {
-             if(isset($this->UHCMananger->getLevels()[$sender->getLevel()->getName()]) and !isset($this->UHCMananger->getStartedGames()[$sender->getLevel()->getName()])) {
+             if(isset($this->UHCManager->getLevels()[$sender->getLevel()->getName()]) and !isset($this->UHCManager->getStartedGames()[$sender->getLevel()->getName()])) {
                      switch($args[0]) {
                          case "add":
                          if(isset($args[1])) {
-                         if(isset($this->UHCMananger->getLevels()[$sender->getLevel()->getName()]->scenarioManager->getScenarios()[$args[1]])) {
-                             if(!isset($this->UHCMananger->getLevels()[$sender->getLevel()->getName()]->scenarioManager->getUsedScenarios()[$args[1]])) {
-                                 $this->UHCMananger->getLevels()[$sender->getLevel()->getName()]->scenarioManager->addScenario($args[1]);
+                         if(isset($this->UHCManager->getLevels()[$sender->getLevel()->getName()]->scenarioManager->getScenarios()[$args[1]])) {
+                             if(!isset($this->UHCManager->getLevels()[$sender->getLevel()->getName()]->scenarioManager->getUsedScenarios()[$args[1]])) {
+                                 $this->UHCManager->getLevels()[$sender->getLevel()->getName()]->scenarioManager->addScenario($args[1]);
                                  foreach($sender->getLevel()->getPlayers() as $p) {
                                      $p->sendTip(C::GOLD . C::BOLD . "Scenario added !" . PHP_EOL . C::RESET . C::GREEN . C::ITALIC . "+ " . $args[1]);
                                  }
@@ -154,9 +138,9 @@ switch($cmd->getName()){
                          case "delete":
                          case "del":
                          if(isset($args[1])) {
-                         if(isset($this->UHCMananger->getLevels()[$sender->getLevel()->getName()]->scenarioManager->getScenarios()[$args[1]])) {
-                             if(isset($this->UHCMananger->getLevels()[$sender->getLevel()->getName()]->scenarioManager->getUsedScenarios()[$args[1]])) {
-                                 $this->UHCMananger->getLevels()[$sender->getLevel()->getName()]->scenarioManager->rmScenario($args[1]);
+                         if(isset($this->UHCManager->getLevels()[$sender->getLevel()->getName()]->scenarioManager->getScenarios()[$args[1]])) {
+                             if(isset($this->UHCManager->getLevels()[$sender->getLevel()->getName()]->scenarioManager->getUsedScenarios()[$args[1]])) {
+                                 $this->UHCManager->getLevels()[$sender->getLevel()->getName()]->scenarioManager->rmScenario($args[1]);
                                  foreach($sender->getLevel()->getPlayers() as $p) {
                                      $p->sendTip(C::GOLD . C::BOLD . "Scenario added !" . PHP_EOL . C::RESET . C::GREEN . C::ITALIC . "+ " . $args[1]);
                                  }
@@ -172,15 +156,15 @@ switch($cmd->getName()){
                          }
                          break;
                          case "list":
-                         $sender->sendMessage(self::PREFIX . "Current server's scenarios: " . implode(", " $this->UHCMananger->getLevels()[$sender->getLevel()->getName()]->scenarioManager->getScenarios()));
+                         $sender->sendMessage(self::PREFIX . "Current server's scenarios: " . implode(", ", $this->UHCManager->getLevels()[$sender->getLevel()->getName()]->scenarioManager->getScenarios()));
                          break;
                      }
              } else {
-                 $sender->sendMessage(self::PREFIX . "You're not in a UHC world !")
+                 $sender->sendMessage(self::PREFIX . "You're not in a UHC world !");
              }
         } else {
-            if(isset($this->UHCMananger->getLevels()[$sender->getLevel()->getName()]) and !isset($this->UHCMananger->getStartedGames()[$sender->getLevel()->getName()])) {
-                $sender->sendMessage(self::PREFIX . "Current enabled scenarios : " . implode(", ", $this->UHCManager[$sender->getLevel()->getName()]->scenarioManager->getUsedScenarios()))
+            if(isset($this->UHCManager->getLevels()[$sender->getLevel()->getName()]) and !isset($this->UHCManager->getStartedGames()[$sender->getLevel()->getName()])) {
+                $sender->sendMessage(self::PREFIX . "Current enabled scenarios : " . implode(", ", $this->UHCManager[$sender->getLevel()->getName()]->scenarioManager->getUsedScenarios()));
             }
         }
     break;
@@ -195,7 +179,7 @@ return false;
 
  # Event Listener !
 
- public function onInteract(PlayerInteractEvent $event) {
+ public function onInteract(\pocketmine\event\player\PlayerInteractEvent $event) {
     //    echo $event->getBlock()->getId() . "=/=" . Block::SIGN_POST ."=/=" . Block::WALL_SIGN;
        if($event->getBlock()->getId() == Block::SIGN_POST or $event->getBlock()->getId() == Block::WALL_SIGN) {
            $t = $event->getBlock()->getLevel()->getTile($event->getBlock());
@@ -359,17 +343,6 @@ return false;
                $sc->onDataPacketReceive($event);
            }
        }
-       if($event->getPacket() instanceof \pocketmine\network\protocol\UseItemPacket) {
-           if($event->getPlayer()->getInventory()->getItemInHand()->getId() == Item::GOLD_APPLE and !$ev->isCancelled()) { // Golden apple
-               $e = \pocketmine\entity\Effect::getEffectByName("ABSORBTION");
-               $e->setDuration(120000);
-               $event->getPlayer()->addEffect($e);
-               $e = \pocketmine\entity\Effect::getEffectByName("REGENERATION");
-               $e->setDuration(5000);
-               $e->setAmplifier(2);
-               $event->getPlayer()->addEffect($e);
-           }
-       }
    }
 
 
@@ -391,6 +364,17 @@ return false;
    }
 
    public function onPlayerJoin(\pocketmine\event\player\PlayerJoinEvent $event) {
+        if(!isset($this->ft)) {
+            $this->ft = $this->getServer()->getScheduler()->scheduleRepeatingTask(new FetchPlayersTask($this, $this->UHCManager->getLevels()), 10);
+        }
+        if(isset($this->quit[$event->getPlayer()->getName()])) {
+                $quit = explode("/", $this->quit[$event->getPlayer()->getName()]);
+                $event->getPlayer()->teleport($this->getServer()->getLevelByName($quit[4]));
+                $event->getPlayer()->teleport(new Vector3($quit[0], $quit[1], $quit[2]));
+                foreach($this->getServer()->getLevelByName($quit[4])->getLevel()->getPlayers() as $player) {
+                    $player->sendMessage(self::PREFIX . C::GREEN . "{$event->getPlayer()->getName()} back to game !");
+                }
+        }
        if(isset($this->UHCManager->getLevels()[$event->getPlayer()->getLevel()->getName()])) {
            foreach($this->UHCManager->getLevels()[$event->getPlayer()->getLevel()->getName()]->scenarioManager->getScenarios() as $sc) {
                $sc->onJoin($event->getPlayer());
