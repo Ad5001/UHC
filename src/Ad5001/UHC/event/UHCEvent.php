@@ -15,5 +15,5 @@ abstract class UHCEvent extends Event {
         return $this->game;
     }
 
-    
+
 }

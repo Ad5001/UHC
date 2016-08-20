@@ -60,7 +60,7 @@ class UHCManager {
 
     public function registerLevel(Level $level) {
         if(!array_key_exists($level->getName(), $this->levels)) {
-            $this->levels[$level->getName()] = new UHCWorld($this->m,$level);
+            $this->levels[$level->getName()] = new UHCWorld($this->m,$level,$this->main->getConfig()->get("worlds")[$level->getName()]["maxplayers"],$this->main->getConfig()->get("worlds")[$level->getName()]["radius"]);
         } else {
             $this->main->getLogger()->warning("{$level->getName()} is already registered.");
         }

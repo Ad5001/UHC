@@ -61,10 +61,6 @@ class Main extends PluginBase implements Listener{
     public function onPlayerJoin(PlayerJoinEvent $event) {
         if(!isset($this->ft)) {
             $this->ft = $this->getServer()->getScheduler()->scheduleRepeatingTask(new FetchPlayersTask($this, $this->worlds), 10);
-            foreach($this->getConfig()->get("worlds") as $lvl) {
-                $this->worlds[$lvl["name"]] = new UHCWorld($this, $this->getServer()->getLevelByName($lvl["name"]), $lvl["name"], $lvl["maxplayers"], $lvl["radius"]);
-                $this->getLogger()->debug("Processing {$lvl["name"]}");
-            }
         }
         if(isset($this->quit[$event->getPlayer()->getName()])) {
                 $quit = explode("/", $this->quit[$event->getPlayer()->getName()]);
@@ -130,12 +126,12 @@ switch($cmd->getName()){
     if(isset($args[0]) and $sender instanceof Player) {
         switch($args[0]) {
             case "start":
-            if(isset($this->worlds[$sender->getLevel()->getName()]) and !isset($this->games[$sender->getLevel()->getName()])) {
+            if(isset($this->UHCMananger->getLevels()[$sender->getLevel()->getName()]) and !isset($this->UHCMananger->getStartedUHCs()[$sender->getLevel()->getName()])) {
                 $this->getLogger()->debug("Starting game {$sender->getLevel()->getName()}");
                 foreach($sender->getLevel()->getPlayers() as $player) {
                     $player->sendMessage(self::PREFIX . "Starting game...");
                 }
-                $this->startGame($this->worlds[$sender->getLevel()->getName()]);
+                $this->startGame($this->UHCMananger->getLevels()[$sender->getLevel()->getName()]);
             } else {
                 $sender->sendMessage("You are not in a UHC world or UHC is already started");
             }
@@ -145,19 +141,56 @@ switch($cmd->getName()){
     }
     break;
     case "scenarios":
-        if(isset($args[2])) {
+        if(isset($args[0])) {
              if(isset($this->UHCMananger->getLevels()[$sender->getLevel()->getName()]) and !isset($this->UHCMananger->getStartedGames()[$sender->getLevel()->getName()])) {
-                 if(file_exists($this->getDataFolder() . "scenarios/" . $args[2] . ".php")) { // yes, I'm treating args[2] before args[1] but who cares x) ?
-                     switch($args[1]) {
+                     switch($args[0]) {
                          case "add":
-                         require_once(realpath($this->getDataFolder() . "scenarios/" . $args[2] . ".php"));
-                         $scenarios[$args[2]] = new $args[2]();
+                         if(isset($args[1])) {
+                         if(isset($this->UHCMananger->getLevels()[$sender->getLevel()->getName()]->scenarioManager->getScenarios()[$args[1]])) {
+                             if(!isset($this->UHCMananger->getLevels()[$sender->getLevel()->getName()]->scenarioManager->getUsedScenarios()[$args[1]])) {
+                                 $this->UHCMananger->getLevels()[$sender->getLevel()->getName()]->scenarioManager->addScenario($args[1]);
+                                 foreach($sender->getLevel()->getPlayers() as $p) {
+                                     $p->sendTip(C::GOLD . C::BOLD . "Scenario added !" . PHP_EOL . C::RESET . C::GREEN . C::ITALIC . "+ " . $args[1]);
+                                 }
+                                 $sender->sendMessage(self::PREFIX . C::GREEN . " Succefully added scenario $args[1] !");
+                             } else {
+                                 $sender->sendMessage(slef::PREFIX . C::DARK_RED . "Scenario $args[1] has already been added !");
+                             }
+                         } else {
+                             $sender->sendMessage(self::PREFIX . C::DARK_RED . "Scenario $args[1] does not exists !");
+                         }
+                         } else {
+                             $sender->sendMessage(self::PREFIX . C::DARK_RED . "Usage: /scenarios add <scenario>");
+                         }
                          break;
                          case "remove":
-                         unset($scenarios[$args[2]]);
+                         case "rm":
+                         case "delete":
+                         case "del":
+                         if(isset($args[1])) {
+                         if(isset($this->UHCMananger->getLevels()[$sender->getLevel()->getName()]->scenarioManager->getScenarios()[$args[1]])) {
+                             if(isset($this->UHCMananger->getLevels()[$sender->getLevel()->getName()]->scenarioManager->getUsedScenarios()[$args[1]])) {
+                                 $this->UHCMananger->getLevels()[$sender->getLevel()->getName()]->scenarioManager->rmScenario($args[1]);
+                                 foreach($sender->getLevel()->getPlayers() as $p) {
+                                     $p->sendTip(C::GOLD . C::BOLD . "Scenario added !" . PHP_EOL . C::RESET . C::GREEN . C::ITALIC . "+ " . $args[1]);
+                                 }
+                                 $sender->sendMessage(self::PREFIX . C::GREEN . " Succefully removed scenario $args[1] !");
+                             } else {
+                                 $sender->sendMessage(slef::PREFIX . C::DARK_RED . "Scenario $args[1] hasn't been added yet !");
+                             }
+                         } else {
+                             $sender->sendMessage(self::PREFIX . C::DARK_RED . "Scenario $args[1] does not exists !");
+                         }
+                         } else {
+                             $sender->sendMessage(self::PREFIX . C::DARK_RED . "Usage: /scenarios rm <scenario>");
+                         }
+                         break;
+                         case "list":
+                         $sender->sendMessage(self::PREFIX . "Current server's scenarios: " . implode(", " $this->UHCMananger->getLevels()[$sender->getLevel()->getName()]->scenarioManager->getScenarios()));
                          break;
                      }
-                 }
+             } else {
+                 $sender->sendMessage(self::PREFIX . "You're not in a UHC world !")
              }
         }
     break;
