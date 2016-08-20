@@ -39,13 +39,13 @@ class Main extends PluginBase implements Listener{
     
     public function onLevelChange(EntityLevelChangeEvent $event) {
         foreach($this->UHCManager->getLevels() as $world) {
-            if($event->getTarget()->getName() === $world->getName() and !isset($this->games[$world->getName()])) {
+            if($event->getTarget()->getName() === $world->getName() and !isset($this->UHCManager->getStartedUHCs()[$world->getName()])) {
                 if(count($world->getLevel()->getPlayers()) > $world->maxplayers) {
                     $event->setCancelled();
                 }
-            } elseif($event->getTarget()->getName() === $world->getName() and isset($this->games[$world->getName()]) and !isset($this->quit[$event->getEntity()])) {
+            } elseif($event->getTarget()->getName() === $world->getName() and isset($this->UHCManager->getStartedUHCs()[$world->getName()]) and !isset($this->quit[$event->getEntity()])) {
                 $event->getPlayer()->setGamemode(3);
-            } elseif($event->getTarget()->getName() === $world->getName() and isset($this->games[$world->getName()]) and isset($this->quit[$event->getEntity()])) {
+            } elseif($event->getTarget()->getName() === $world->getName() and isset($this->UHCManager->getStartedUHCs()[$world->getName()]) and isset($this->quit[$event->getEntity()])) {
                 $quit = explode("/", $this->quit[$event->getEntity()]);
                 if($quit[3] === $world->getName()) {
                     $event->getPlayer()->teleport(new Vector3($quit[0], $quit[1], $quit[2]));
@@ -65,7 +65,7 @@ class Main extends PluginBase implements Listener{
         $this->getServer()->getPluginManager()->registerEvent("Ad5001\\UHC\\event\\GameStartEvent", $this, \pocketmine\event\EventPriority::NORMAL, new \pocketmine\plugin\MethodEventExecutor("onGameStart"), $this, true);
         $this->getServer()->getPluginManager()->registerEvent("Ad5001\\UHC\\event\\GameStopEvent", $this, \pocketmine\event\EventPriority::NORMAL, new \pocketmine\plugin\MethodEventExecutor("onGameStop"), $this, false);
         $this->UHCManager = new UHCManager($this);
-        $this->games = [];
+        $this->UHCManager->getStartedUHCs() = [];
         $this->quit = [];
     }
 
@@ -111,7 +111,7 @@ switch($cmd->getName()){
     }
     break;
     case "scenarios":
-        if(isset($args[0]) and $sender instanceof Player) {
+        if(isset($args[0]) and $sender instanceof Player and $sender->hasPermission("uhc.scenarios.modify")) {
              if(isset($this->UHCManager->getLevels()[$sender->getLevel()->getName()]) and !isset($this->UHCManager->getStartedGames()[$sender->getLevel()->getName()])) {
                      switch($args[0]) {
                          case "add":

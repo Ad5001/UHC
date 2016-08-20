@@ -19,7 +19,12 @@ commands:
    scenarios:
      description: Manage UHC scenarios
      usage: "/scenarios [add | remove | list] [scenario]"
+     permission: uhc.command.scenarios
 permissions:
    uhc.command.main:
+     default: op
+   uhc.command.scenarios:
+     default: true
+   uhc.scenarios.modify:
      default: op
 ...

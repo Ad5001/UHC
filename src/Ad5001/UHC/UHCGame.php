@@ -96,7 +96,7 @@ class UHCGame implements Listener{
     public function onPlayerDeath(PlayerDeathEvent $event) {
         if($event->getPlayer()->getLevel()->getName() === $this->world->getName() and !$this->cancelled) {
             foreach($event->getPlayer()->getLevel()->getPlayers() as $p) {
-                $p->sendMessage(Main::PREFIX . C::YELLOW . $event->getPlayer()->getName() . " died.");
+                $p->sendMessage(Main::PREFIX . C::YELLOW . $event->getPlayer()->getName() . " died. " . (count($this->world->getLevel()->getPlayers) - 2)) . " players left !");
             }
             $this->respawn[$event->getPlayer()->getName()] = true;
             $pls = [];
@@ -138,7 +138,7 @@ class UHCGame implements Listener{
             $this->m->getServer()->getPluginManager()->callEvent($event = new GameStopEvent($this, $this->world, $winner));
             if(!$event->isCancelled()) {
                 foreach($this->players as $player) {
-                    $player->sendMessage(Main::PREFIX . C::YELLOW . $winner->getName());
+                    $player->sendMessage(Main::PREFIX . C::YELLOW . $winner->getName() . " won the game ! Teleporting back to lobby...");
                     $player->teleport($this->m->getServer()->getLevelByName($this->m->getConfig()->get("LobbyWorld"))->getSafeSpawn());
                 }
             }
