@@ -12,56 +12,142 @@ use pocketmine\command\Command;
 use pocketmine\command\CommandSender;
 use pocketmine\command\PluginIdentifiableCommand;
 use pocketmine\Server;
+use pocketmine\event\Listener;
 use pocketmine\utils\Config;
 use Ad5001\UHC\scenario\ScenarioInt;
+use Ad5001\UHC\Main;
 
-abstract class Scenario implements ScenarioInt {
+abstract class Scenario implements ScenarioInt, Listener {
     
     private $server;
     
-    private $name;
+    private $game;
     
-    private $config;
+    private $level;
     
-    public function onEnable() {}
+    public function __construct(Server $server, UHCGame $game, UHCWorld $level) {
+        $this->server = $server;
+        $this->game = $game;
+        $this->level = $level;
+    }
     
     
+    public function onStart()
     
     
     public function onStop() {}
+
+    public function onInteract(\pocketmine\event\player\PlayerInteractEvent $event) {}
+
+
+   public function onChat(\pocketmine\event\player\PlayerChatEvent $event) {}
+
+
+   public function onPlayerChat(\pocketmine\event\player\PlayerChatEvent $event) {}
+
+
+   public function onPlayerCommand(\pocketmine\event\player\PlayerCommandPreprocessEvent $event) {}
+
+
+   public function onDeath(\pocketmine\event\player\PlayerDeathEvent $event) {}
+
+
+   public function onPlayerDeath(\pocketmine\event\player\PlayerDeathEvent $event) {}
+
+
+   public function onPlayerDropItem(\pocketmine\event\player\PlayerDropItemEvent $event) {}
+
+
+   public function onDrop(\pocketmine\event\player\PlayerDropItemEvent $event) {}
+
+
+   public function onPlayerMove(\pocketmine\event\player\PlayerMoveEvent $event) {}
+
+
+   public function onMove(\pocketmine\event\player\PlayerMoveEvent $event) {}
+
+
+   public function onPlayerItemConsume(\pocketmine\event\player\PlayerItemConsumeEvent $event) {}
+
+
+   public function onItemConsume(\pocketmine\event\player\PlayerItemConsumeEvent $event) {}
+
+
+   public function onPlayerItemHeld(\pocketmine\event\player\PlayerItemHeldEvent $event) {}
+
+
+   public function onItemHeld(\pocketmine\event\player\PlayerItemHeldEvent $event) {}
+
+
+   public function onDataPacketReceive(\pocketmine\event\server\DataPacketReceiveEvent $event) {}
+
+
+   public function onDataPacketSend(\pocketmine\event\server\DataPacketSendEvent $event) {}
+
+
+   public function onServerCommand(\pocketmine\event\server\ServerCommandEvent $event) {}
+
+
+   public function onBlockBreak(\pocketmine\event\block\BlockBreakEvent $event) {}
+
+
+   public function onBreak(\pocketmine\event\block\BlockBreakEvent $event) {}
+
+
+   public function onBlockPlace(\pocketmine\event\block\BlockPlaceEvent $event) {}
+
+
+   public function onPlace(\pocketmine\event\block\BlockPlaceEvent $event) {}
+
+
+   public function onEntityDamage(\pocketmine\event\entity\EntityDamageEvent $event) {}
+
+
+   public function onProjectileLaunch(\pocketmine\event\entity\ProjectileLauchEvent $event) {}
+
+
+   public function onProjectileHit(\pocketmine\event\entity\ProjectileHitEvent $event) {}
     
     
-    
-    
+    public function getMain() {
+        return $this->server->getPluginManager()->getPlugin("UHC");
+    }
+
+
     public function getServer() {
-        return Server::getInstance();
+        return $this->main->getServer();
+    }
+
+
+    public function getLogger() {
+        return $this->getMain()->getLogger();
     }
     
     
     
     public function getConfig() {
-        return Main::getConfig()->get("Scenarios")[$this->name];
+        return $this->getMain()->getConfig()->get("Scenarios")[$this->name];
     }
     
     
     
     public function reloadConfig() {
-        Main::reloadConfig();
-        return Main::getConfig()->get("Scenarios")[$this->name];
+        $this->getMain()->reloadConfig();
+        return $this->getMain()->getConfig()->get("Scenarios")[$this->name];
     }
     
     
     
     public function saveConfig($cfg) {
-        $scenarios = Main::getConfig()->get("Scenarios");
+        $scenarios = $this->getMain()->getConfig()->get("Scenarios");
         $scenarios[$this->name] = $cfg;
-        Main::getConfig()->set("Scenarios", $scenarios);
-        return Main::getConfig->save();
+        $this->getMain()->getConfig()->set("Scenarios", $scenarios);
+        return $this->getMain()->getConfig->save();
     }
     
     
     
     public function getScenarioFolder() {
-        return realPath(Main::getDataFolder . "scenarios/");
+        return realPath($this->getMain()->getDataFolder . "scenarios/");
     }
 }

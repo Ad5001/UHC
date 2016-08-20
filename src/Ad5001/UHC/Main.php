@@ -29,7 +29,10 @@ use Ad5001\UHC\task\FetchPlayersTask;
 use Ad5001\UHC\task\StartGameTask;
 use Ad5001\UHC\event\GameStartEvent;
 use Ad5001\UHC\event\GameFinishEvent;
+
 class Main extends PluginBase implements Listener{
+    
+    public $self;
     const PREFIX = C::GOLD . "[" . C::DARK_RED . "UHC" . C::GOLD . "] ". C::RESET;
     
     
@@ -84,9 +87,14 @@ class Main extends PluginBase implements Listener{
     
     
     
+    public static function getSelf() {
+        return $this;
+    }
+    
     
     public function onEnable(){
-        $this->reloadConfig();
+        $this->saveDefaultConfig();
+        mkdir($this->getDataFolder() . "scenarios");
         $this->getServer()->getPluginManager()->registerEvents($this, $this);
         $this->worlds = [];
         $this->games = [];
@@ -95,11 +103,6 @@ class Main extends PluginBase implements Listener{
  
  
  
- 
-public function onLoad(){
-$this->reloadConfig();
-$this->saveDefaultConfig();
-}
 
 public function onRespawn(PlayerRespawnEvent $event) {
     foreach($this->games as $game) {
@@ -171,10 +174,8 @@ switch($cmd->getName()){
                          case "add":
                          require_once(realpath($this->getDataFolder() . "scenarios/" . $args[2] . ".php"));
                          $scenarios[$args[2]] = new $args[2]();
-                         $scenarios[$args[2]]->onEnable();
                          break;
                          case "remove":
-                         $scenarios[$args[2]]->onStop();
                          unset($scenarios[$args[2]]);
                          break;
                      }

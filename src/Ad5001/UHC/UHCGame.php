@@ -36,6 +36,7 @@ class UHCGame implements Listener{
     public function __construct(Plugin $plugin, UHCWorld $world) {
         $this->m = $plugin;
         $this->world = $world;
+        $plugin->getServer()->registerEvets($this, $plugin);
         $this->players = $world->getLevel()->getPlayers();
         $event = new GameStartEvent($this, $world, $this->players);
         $this->m->getServer()->getPluginManager()->callEvent($event);
@@ -166,5 +167,17 @@ class UHCGame implements Listener{
         } else {
             return null;
         }
+    }
+    /*
+    Will be useful for scenarios too:
+    @param player
+    */
+    public function addKills(Player $player, int $count) {
+        if(isset($this->kills[$player->getName()])) {
+            $this->kills[$player->getName()] += $count;
+        } else {
+            $this->kills[$player->getName()] = $count;
+        }
+        return true;
     }
 }

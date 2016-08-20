@@ -1,4 +1,3 @@
----
 #  _    _ _    _  _____ 
 # | |  | | |  | |/ ____|
 # | |  | | |__| | |     
@@ -6,6 +5,7 @@
 # | |__| | |  | | |____ 
 #  \____/|_|  |_|\_____|
 # The most customisable UHC plugin for Minecraft PE !
+---
 name: UHC
 author:  Ad5001
 version: 1.0

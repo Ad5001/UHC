@@ -18,8 +18,8 @@ interface ScenarioInt extends CommandExecutor {
     public function onStop();
     
     
-     /* Getting the server methods */
-    public function getServer();
+     /* Getting the main methods */
+    public function getMain();
     
     
      /* Get the config (which is a part of the config of the plugin) */
@@ -28,6 +28,11 @@ interface ScenarioInt extends CommandExecutor {
     
     /* Save the config */
     public function saveConfig();
+    
+    
+    /* Test when an event is throwed */
+    public function onPlayerEvent(\pocketmine\event\player\PlayerEvent $event);
+    public function onEvent(\pocketmine\event\Event $event);
     
     
     /* Get the scenario folder */

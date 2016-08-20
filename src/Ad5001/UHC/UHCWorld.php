@@ -18,29 +18,36 @@ use pocketmine\Player;
 use pocketmine\utils\TextFormat as C;
 
 use Ad5001\UHC\Main;
-use Ad5001\UHC\Utils\TextParticle;
+use Ad5001\UHC\scenario\ScenarioManager;
+
+
 class UHCWorld {
-    public function __construct(Plugin $main, Level $level, string $name, int $maxplayers, int $radius) {
+    public function __construct(Plugin $main, Level $level, int $maxplayers, int $radius) {
         $this->p = $main;
         $this->lvl = $level;
-        $this->name = $name;
         $this->maxplayers = $maxplayers;
         $this->players = [];
         $this->cfg = $main->getConfig();
         $this->radius = $radius;
+        $this->scenarioManager = new ScenarioManager($this->p, $this);
     }
+
+
     public function getLevel() {
         return $this->lvl;
     }
-    public function getName() {
-        return $this->name;
-    }
+    
+
     public function getPlayers() {
         return $this->players;
     }
+
+
     public function getMaxPlayers() {
         return $this->maxplayers;
     }
+
+    
     public function setPlayers(array $players) {
         foreach($players as $player) {
             if(!in_array($player, $this->players)){

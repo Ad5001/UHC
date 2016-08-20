@@ -1,4 +1,6 @@
 ---
-# You can modify this config :)
-version: 1.0
+# Set your worlds here !
+worlds: []
+# Will be added if you add scenarios
+scenarios: []
 ...
