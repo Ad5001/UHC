@@ -36,7 +36,7 @@ class UHCGame implements Listener{
     public function __construct(Plugin $plugin, UHCWorld $world) {
         $this->m = $plugin;
         $this->world = $world;
-        $plugin->getServer()->registerEvets($this, $plugin);
+        $plugin->getServer()->getPluginManager()->registerEvents($this, $plugin);
         $this->players = $world->getLevel()->getPlayers();
         $event = new GameStartEvent($this, $world, $this->players);
         $this->m->getServer()->getPluginManager()->callEvent($event);

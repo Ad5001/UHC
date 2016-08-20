@@ -15,21 +15,34 @@ use Ad5001\UHC\UHCWorld;
 protected $game;
 protected $world;
 protected $winner;
-class GameFinishEvent extends UHCEvent implements Cancellable {
+
+
+class GameStopEvent extends UHCEvent implements Cancellable {
+
+
+
     public function __construct($game, $world, $winner) {
         $this->game = $game;
         $this->world = $world;
         $this->winner = $winner;
     }
+
+
     public function getWorld() {
         return $this->world;
     }
+
+
     public function getLevel() {
         return $this->world;
     }
+
+
     public function getWinner() {
         return $this->winner;
     }
+
+    
     public function setWinner(Player $winner) {
         $this->winner = $winner;
     }

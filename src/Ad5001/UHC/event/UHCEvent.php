@@ -9,7 +9,11 @@
 namespace Ad5001\UHC\event;
 use pocketmine\event\Event;
 abstract class UHCEvent extends Event {
+
+
     public function getGame() {
         return $this->game;
     }
+
+    
 }
