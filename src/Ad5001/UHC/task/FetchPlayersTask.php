@@ -39,5 +39,6 @@ class FetchPlayersTask extends PluginTask {
                 $this->m->UHCManager->startGame($world);
             }
         }
+        $this->worlds = $this->m->UHCManager->getLevels();
     }
 }

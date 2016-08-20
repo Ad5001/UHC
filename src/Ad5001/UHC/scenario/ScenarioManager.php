@@ -64,7 +64,7 @@ class ScenarioManager {
 
 
     public function getLevel() {
-        return $this->levels;
+        return $this->level;
     }
 
 

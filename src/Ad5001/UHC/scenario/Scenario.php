@@ -36,6 +36,12 @@ abstract class Scenario implements ScenarioInt, Listener {
     
     
     public function onStop() {}
+
+
+    public function onJoin(Player $player) {}
+
+
+    public function onQuit(Player $player) {}
     
 
     public function onInteract(\pocketmine\event\player\PlayerInteractEvent $event) {}
