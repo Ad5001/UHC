@@ -36,6 +36,7 @@ abstract class Scenario implements ScenarioInt, Listener {
     
     
     public function onStop() {}
+    
 
     public function onInteract(\pocketmine\event\player\PlayerInteractEvent $event) {}
 
@@ -148,6 +149,6 @@ abstract class Scenario implements ScenarioInt, Listener {
     
     
     public function getScenarioFolder() {
-        return realPath($this->getMain()->getDataFolder . "scenarios/");
+        return realPath($this->getMain()->getDataFolder() . "scenarios/");
     }
 }

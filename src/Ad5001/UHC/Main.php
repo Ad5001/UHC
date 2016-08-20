@@ -31,21 +31,12 @@ use Ad5001\UHC\event\GameStartEvent;
 use Ad5001\UHC\event\GameFinishEvent;
 
 class Main extends PluginBase implements Listener{
-    
-    public $self;
     const PREFIX = C::GOLD . "[" . C::DARK_RED . "UHC" . C::GOLD . "] ". C::RESET;
     
     
     
-    public function startGame(UHCWorld $world) {
-        $ft = $this->getServer()->getScheduler()->scheduleRepeatingTask(new StartGameTask($this, $world), 20);
-        // $this->games[$world->getName()] = new UHCGame($this, $world);
-    } 
-    
-    
-    
     public function onLevelChange(EntityLevelChangeEvent $event) {
-        foreach($this->worlds as $world) {
+        foreach($this->UHCManager->getLevels() as $world) {
             if($event->getLevel()->getName() === $world->getName() and !isset($this->games[$world->getName()])) {
                 if(count($world->getLevel()->getPlayers) > $world->maxplayers) {
                     $event->setCancelled();
@@ -86,19 +77,21 @@ class Main extends PluginBase implements Listener{
     }
     
     
-    
-    public static function getSelf() {
-        return $this;
-    }
-    
-    
     public function onEnable(){
         $this->saveDefaultConfig();
         mkdir($this->getDataFolder() . "scenarios");
         $this->getServer()->getPluginManager()->registerEvents($this, $this);
-        $this->worlds = [];
+        $this->UHCManager = new UHCManager($this);
         $this->games = [];
         $this->quit = [];
+    }
+
+
+
+    public function onLevelLoad(\pocketmine\event\level\LevelLoadEvent $event) {
+        if(isset($this->getConfig()->get("worlds")[$event->getLevel()->getName()])) {
+            $this->UHCManager->registerLevel($event->getLevel());
+        }
     }
  
  
@@ -146,29 +139,12 @@ switch($cmd->getName()){
             }
             return true;
             break;
-            case "tp":
-            if(isset($this->worlds[$sender->getLevel()->getName()]) and isset($this->games[$sender->getLevel()->getName()]) and $sender->getGamemode() === 3) {
-                if(isset($args[1])) {
-                    if($this->getServer()->getPlayer($args[1])->getName() ===! null) {
-                        $player = $this->getServer()->getPlayer($args[1]);
-                        $sender->teleport(new Vector3($player->x, $player->y, $player->z), $player->yaw, $player->pitch);
-                    } else {
-                        $sender->sendMessage(self::PREFIX . "Player {$args[1]} does NOT exist!");
-                    }
-                }  else {
-                        $sender->sendMessage(self::PREFIX . "Usage: /uhc tp <player>");
-                }
-            }  else {
-                        $sender->sendMessage(self::PREFIX . "Either you're not in a UHC Game or in gamemode 3");
-                }
-            return true;
-            break;
         }
     }
     break;
     case "scenarios":
         if(isset($args[2])) {
-             if(isset($this->worlds[$sender->getLevel()->getName()]) and !isset($this->games[$sender->getLevel()->getName()])) {
+             if(isset($this->UHCMananger->getLevels()[$sender->getLevel()->getName()]) and !isset($this->UHCMananger->getStartedGames()[$sender->getLevel()->getName()])) {
                  if(file_exists($this->getDataFolder() . "scenarios/" . $args[2] . ".php")) { // yes, I'm treating args[2] before args[1] but who cares x) ?
                      switch($args[1]) {
                          case "add":

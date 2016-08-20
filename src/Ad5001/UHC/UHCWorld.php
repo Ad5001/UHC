@@ -43,6 +43,11 @@ class UHCWorld {
     }
 
 
+    public function getName() {
+        return $this->level->getName();
+    }
+
+
     public function getMaxPlayers() {
         return $this->maxplayers;
     }

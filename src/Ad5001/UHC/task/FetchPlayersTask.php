@@ -36,7 +36,7 @@ class FetchPlayersTask extends PluginTask {
             }
             $world->setPlayers($wpls);
             if(count($wpls) > $world->getMaxPlayers()*0.75 and count($wpls) < $world->getMaxPlayers()) {
-                $this->m->startGame($world);
+                $this->m->UHCManager->startGame($world);
             }
         }
     }
