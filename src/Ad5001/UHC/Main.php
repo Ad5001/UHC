@@ -17,6 +17,7 @@ use pocketmine\event\player\PlayerChatEvent;
 use pocketmine\event\player\PlayerQuitEvent;
 use pocketmine\event\player\PlayerRespawnEvent;
 use pocketmine\event\entity\EntityRegainHealthEvent;
+use pocketmine\item\Item;
 use pocketmine\plugin\PluginBase;
 use pocketmine\Server;
 use pocketmine\Player;
@@ -91,33 +92,6 @@ class Main extends PluginBase implements Listener{
             $this->UHCManager->registerLevel($event->getLevel());
         }
     }
- 
- 
- 
-
-public function onRespawn(PlayerRespawnEvent $event) {
-    foreach($this->games as $game) {
-        $game->onRespawn($event);
-    }
-}
-
-public function onPlayerQuit(PlayerQuitEvent $event) {
-    foreach($this->games as $game) {
-        $game->onPlayerQuit($event);
-    }
-}
-
-public function onPlayerDeath(PlayerDeathEvent $event) {
-    foreach($this->games as $game) {
-        $game->onPlayerDeath($event);
-    }
-}
-
-public function onHeal(EntityRegainHealthEvent $event) {
-    foreach($this->games as $game) {
-        $game->onHeal($event);
-    }
-}
 
 
  public function onCommand(CommandSender $sender, Command $cmd, $label, array $args){
@@ -131,7 +105,19 @@ switch($cmd->getName()){
                 foreach($sender->getLevel()->getPlayers() as $player) {
                     $player->sendMessage(self::PREFIX . "Starting game...");
                 }
-                $this->startGame($this->UHCMananger->getLevels()[$sender->getLevel()->getName()]);
+                $this->UHCMananger->startUHC($sender->getLevel());
+            } else {
+                $sender->sendMessage("You are not in a UHC world or UHC is already started");
+            }
+            return true;
+            break;
+            case "stop":
+            if(isset($this->UHCMananger->getStartedUHCs()[$sender->getLevel()->getName()])) {
+                $this->getLogger()->debug("Starting game {$sender->getLevel()->getName()}");
+                foreach($sender->getLevel()->getPlayers() as $player) {
+                    $player->sendMessage(self::PREFIX . "Starting game...");
+                }
+                $this->stopUHC($sender->getLevel());
             } else {
                 $sender->sendMessage("You are not in a UHC world or UHC is already started");
             }
@@ -141,7 +127,7 @@ switch($cmd->getName()){
     }
     break;
     case "scenarios":
-        if(isset($args[0])) {
+        if(isset($args[0]) and $sender instanceof Player) {
              if(isset($this->UHCMananger->getLevels()[$sender->getLevel()->getName()]) and !isset($this->UHCMananger->getStartedGames()[$sender->getLevel()->getName()])) {
                      switch($args[0]) {
                          case "add":
@@ -192,6 +178,10 @@ switch($cmd->getName()){
              } else {
                  $sender->sendMessage(self::PREFIX . "You're not in a UHC world !")
              }
+        } else {
+            if(isset($this->UHCMananger->getLevels()[$sender->getLevel()->getName()]) and !isset($this->UHCMananger->getStartedGames()[$sender->getLevel()->getName()])) {
+                $sender->sendMessage(self::PREFIX . "Current enabled scenarios : " . implode(", ", $this->UHCManager[$sender->getLevel()->getName()]->scenarioManager->getUsedScenarios()))
+            }
         }
     break;
 }
@@ -367,6 +357,17 @@ return false;
        if(isset($this->UHCManager->getLevels()[$event->getPlayer()->getLevel()->getName()])) {
            foreach($this->UHCManager->getLevels()[$event->getPlayer()->getLevel()->getName()]->scenarioManager->getScenarios() as $sc) {
                $sc->onDataPacketReceive($event);
+           }
+       }
+       if($event->getPacket() instanceof \pocketmine\network\protocol\UseItemPacket) {
+           if($event->getPlayer()->getInventory()->getItemInHand()->getId() == Item::GOLD_APPLE and !$ev->isCancelled()) { // Golden apple
+               $e = \pocketmine\entity\Effect::getEffectByName("ABSORBTION");
+               $e->setDuration(120000);
+               $event->getPlayer()->addEffect($e);
+               $e = \pocketmine\entity\Effect::getEffectByName("REGENERATION");
+               $e->setDuration(5000);
+               $e->setAmplifier(2);
+               $event->getPlayer()->addEffect($e);
            }
        }
    }
