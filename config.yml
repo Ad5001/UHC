@@ -1,3 +1,4 @@
+LobbyWorld: world
 worlds:
    uhc:
         maxplayers: 8

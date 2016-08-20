@@ -16,6 +16,7 @@ use pocketmine\plugin\Plugin;
 use pocketmine\level\particle\FloatingTextParticle;
 use pocketmine\Player;
 use pocketmine\utils\TextFormat as C;
+use pocketmine\math\Vector3;
 
 use Ad5001\UHC\Main;
 use Ad5001\UHC\scenario\ScenarioManager;
@@ -65,7 +66,7 @@ class UHCWorld {
             if(!in_array($player, $players)){
                 foreach($this->players as $pl) {
                     $pl->sendMessage(Main::PREFIX . C::YELLOW . "{$player->getName()} joined the game.");
-                    $part = new TextParticle(new FloatingTextParticle(new Vector3($this->x, $this->y, $this->z), C::GREEN . "Welcome to the UHC {$player->getName()} !\n" . C::GREEN . "To get help about the plugin , please type command /uhc howtoplay .", C::YELLOW . "-=<UHC>=-"), $this->level, $player);
+                    $this->getLevel()->addParticle($part = new FloatingTextParticle(new Vector3($this->getLevel()->getSafeSpawn()->x, $this->getLevel()->getSafeSpawn()->y, $this->getLevel()->getSafeSpawn()->z), C::GREEN . "Welcome to the UHC {$player->getName()} !\n" . C::GREEN . "To get help about the plugin , please type command /uhc howtoplay .", C::YELLOW . "-=<UHC>=-"), [$pl]);
                 }
             }
         }

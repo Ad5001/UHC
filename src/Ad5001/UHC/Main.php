@@ -63,7 +63,7 @@ class Main extends PluginBase implements Listener{
         @mkdir($this->getDataFolder() . "scenarios");
         $this->getServer()->getPluginManager()->registerEvents($this, $this);
         $this->getServer()->getPluginManager()->registerEvent("Ad5001\\UHC\\event\\GameStartEvent", $this, \pocketmine\event\EventPriority::NORMAL, new \pocketmine\plugin\MethodEventExecutor("onGameStart"), $this, true);
-        $this->getServer()->getPluginManager()->registerEvent("Ad5001\\UHC\\event\\GameStopEvent", $this, \pocketmine\event\EventPriority::NORMAL, new \pocketmine\plugin\MethodEventExecutor("onGameStop"), $this, true);
+        $this->getServer()->getPluginManager()->registerEvent("Ad5001\\UHC\\event\\GameStopEvent", $this, \pocketmine\event\EventPriority::NORMAL, new \pocketmine\plugin\MethodEventExecutor("onGameStop"), $this, false);
         $this->UHCManager = new UHCManager($this);
         $this->games = [];
         $this->quit = [];
@@ -397,4 +397,6 @@ return false;
 
 
     public function onGameStop(\Ad5001\UHC\event\GameStopEvent $event) {}
+
+
 }

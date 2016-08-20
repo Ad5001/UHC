@@ -16,6 +16,7 @@ use pocketmine\event\player\PlayerChatEvent;
 use pocketmine\event\player\PlayerQuitEvent;
 use pocketmine\event\player\PlayerRespawnEvent;
 use pocketmine\event\entity\EntityRegainHealthEvent;
+use Ad5001\UHC\event\GameStopEvent;
 use pocketmine\level\Level;
 use pocketmine\plugin\Plugin;
 use pocketmine\math\Vector3;
@@ -94,10 +95,9 @@ class UHCGame implements Listener{
     
     public function onPlayerDeath(PlayerDeathEvent $event) {
         if($event->getPlayer()->getLevel()->getName() === $this->world->getName() and !$this->cancelled) {
-            $players = $this->world->getPlayers();
-            unset($players[$event->getPlayer()]);
-            $this->worlds->setPlayers($players);
-            $event->setDeathMessage(Main::PREFIX . C::YELLOW . $event->getDeathMessage());
+            foreach($event->getPlayer()->getLevel()->getPlayers() as $p) {
+                $p->sendMessage(Main::PREFIX . C::YELLOW . $event->getPlayer()->getName() . " died.");
+            }
             $this->respawn[$event->getPlayer()->getName()] = true;
             $pls = [];
             foreach($this->players as $pl) {
@@ -135,11 +135,11 @@ class UHCGame implements Listener{
     
     public function stop(Player $winner) {
         if(!$this->cancelled) {
-            $event = $this->getServer()->getPluginManager()->callEvent(new GameFinishEvent($this, $this->world, $winner));
+            $this->m->getServer()->getPluginManager()->callEvent($event = new GameStopEvent($this, $this->world, $winner));
             if(!$event->isCancelled()) {
                 foreach($this->players as $player) {
                     $player->sendMessage(Main::PREFIX . C::YELLOW . $winner->getName());
-                    $player->teleport($this->m->getServer()->getLevelByName($this->m->getConfig()->get("LobbyWorld")));
+                    $player->teleport($this->m->getServer()->getLevelByName($this->m->getConfig()->get("LobbyWorld"))->getSafeSpawn());
                 }
             }
         }
