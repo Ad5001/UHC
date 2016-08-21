@@ -13,7 +13,7 @@ This is a recreation of the well known UHC gamemode for Minecraft PE server soft
     
 Current complete features:
 [WIP] Playing UHC (damage without regen and golden apples)        
-[x] MultiWorld compatible     
+- [x] MultiWorld compatible     
 [WIP] Scenario working     
-[x] Full spectator mode     
+- [x] Full spectator mode     
 [WIP] Events     
