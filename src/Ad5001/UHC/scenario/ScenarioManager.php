@@ -48,7 +48,7 @@ class ScenarioManager {
 
     public function addScenario(string $name) {
         if(!isset($this->usedscenarios[$name]) and !$this->level->isStarted()) {
-            $this->usedscenarios[$name] = new $name($this->main, $this->level);
+            $this->usedscenarios[$name] = new $name($this->server, $this->level);
             return true;
         }
         return false;

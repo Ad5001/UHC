@@ -8,10 +8,12 @@
 # The most customisable UHC plugin for Minecraft PE !
 namespace Ad5001\UHC\scenario; 
 use pocketmine\command\CommandExecutor;
+use pocketmine\command\Command;
+use pocketmine\command\CommandSender;
 
-interface ScenarioInt extends CommandExecutor {
+interface ScenarioInt {
     /* When the scenario is activating */
-    public function onEnable();
+    public function onStart();
     
     
      /* When the scenario is stoping (end of UHC) */
@@ -27,12 +29,7 @@ interface ScenarioInt extends CommandExecutor {
     
     
     /* Save the config */
-    public function saveConfig();
-    
-    
-    /* Test when an event is throwed */
-    public function onPlayerEvent(\pocketmine\event\player\PlayerEvent $event);
-    public function onEvent(\pocketmine\event\Event $event);
+    public function saveConfig($cfg);
     
     
     /* Get the scenario folder */
@@ -41,4 +38,6 @@ interface ScenarioInt extends CommandExecutor {
     
     /* Reload the config */
     public function reloadConfig();
+
+
 }

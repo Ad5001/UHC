@@ -37,6 +37,11 @@ class UHCWorld {
     public function getLevel() {
         return $this->lvl;
     }
+
+
+    public function isStarted() {
+        return isset($this->p->UHCManager->getStartedUHCs()[$this->lvl->getName()]);
+    }
     
 
     public function getPlayers() {

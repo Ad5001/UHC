@@ -42,7 +42,7 @@ class UHCManager {
             $ft = $this->main->getServer()->getScheduler()->scheduleRepeatingTask($t = new StartGameTask($this->main, $this->levels[$level->getName()]), 20);
             $t->setHandler($ft);
             $this->startedgames[$level->getName()] = true;
-            foreach($this->levels[$level->getName()]->scenarioManager->getScenarios() as $sc) {
+            foreach($this->levels[$level->getName()]->scenarioManager->getUsedScenarios() as $sc) {
                 $sc->onStart();
             }
             return true;
@@ -55,7 +55,7 @@ class UHCManager {
     public function stopUHC(Level $level) {
         if(isset($this->startedgames[$level->getName()])) {
             unset($this->startedgames[$level->getName()]);
-            foreach($this->levels[$level->getName()]->scenarioManager->getScenarios() as $sc) {
+            foreach($this->levels[$level->getName()]->scenarioManager->getUsedScenarios() as $sc) {
                 $sc->onQuit();
             }
             return true;
@@ -79,6 +79,12 @@ class UHCManager {
 
     public function getStartedUHCs() {
         return $this->startedgames;
+    }
+
+
+    public function addStartedUHC(string $name, UHCGame $game) {
+        $this->startedgames[$name] = $game;
+        return true;
     }
 
 

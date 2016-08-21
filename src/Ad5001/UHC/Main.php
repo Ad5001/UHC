@@ -65,7 +65,6 @@ class Main extends PluginBase implements Listener{
         $this->getServer()->getPluginManager()->registerEvent("Ad5001\\UHC\\event\\GameStartEvent", $this, \pocketmine\event\EventPriority::NORMAL, new \pocketmine\plugin\MethodEventExecutor("onGameStart"), $this, true);
         $this->getServer()->getPluginManager()->registerEvent("Ad5001\\UHC\\event\\GameStopEvent", $this, \pocketmine\event\EventPriority::NORMAL, new \pocketmine\plugin\MethodEventExecutor("onGameStop"), $this, false);
         $this->UHCManager = new UHCManager($this);
-        $this->UHCManager->getStartedUHCs() = [];
         $this->quit = [];
     }
 
@@ -74,6 +73,21 @@ class Main extends PluginBase implements Listener{
     public function onLevelLoad(\pocketmine\event\level\LevelLoadEvent $event) {
         if(isset($this->getConfig()->get("worlds")[$event->getLevel()->getName()])) {
             $this->UHCManager->registerLevel($event->getLevel());
+        }
+    }
+    
+    
+    public function getClasses(string $file) {
+        $tokens = token_get_all($file);
+        $class_token = false;
+        foreach ($tokens as $token) {
+            if (is_array($token)) {
+                if ($token[0] == T_CLASS) {
+                    $class_token = true;
+                } else if ($class_token && $token[0] == T_STRING) {
+                    return $token[1];
+                }
+            }
         }
     }
 
@@ -112,7 +126,7 @@ switch($cmd->getName()){
     break;
     case "scenarios":
         if(isset($args[0]) and $sender instanceof Player and $sender->hasPermission("uhc.scenarios.modify")) {
-             if(isset($this->UHCManager->getLevels()[$sender->getLevel()->getName()]) and !isset($this->UHCManager->getStartedGames()[$sender->getLevel()->getName()])) {
+             if(isset($this->UHCManager->getLevels()[$sender->getLevel()->getName()]) and !isset($this->UHCManager->getStartedUHCs()[$sender->getLevel()->getName()])) {
                      switch($args[0]) {
                          case "add":
                          if(isset($args[1])) {
@@ -124,7 +138,7 @@ switch($cmd->getName()){
                                  }
                                  $sender->sendMessage(self::PREFIX . C::GREEN . " Succefully added scenario $args[1] !");
                              } else {
-                                 $sender->sendMessage(slef::PREFIX . C::DARK_RED . "Scenario $args[1] has already been added !");
+                                 $sender->sendMessage(self::PREFIX . C::DARK_RED . "Scenario $args[1] has already been added !");
                              }
                          } else {
                              $sender->sendMessage(self::PREFIX . C::DARK_RED . "Scenario $args[1] does not exists !");
@@ -138,7 +152,7 @@ switch($cmd->getName()){
                          case "delete":
                          case "del":
                          if(isset($args[1])) {
-                         if(isset($this->UHCManager->getLevels()[$sender->getLevel()->getName()]->scenarioManager->getScenarios()[$args[1]])) {
+                         if(isset($this->UHCManager->getLevels()[$sender->getLevel()->getName()]->scenarioManager->getUsedScenarios()[$args[1]])) {
                              if(isset($this->UHCManager->getLevels()[$sender->getLevel()->getName()]->scenarioManager->getUsedScenarios()[$args[1]])) {
                                  $this->UHCManager->getLevels()[$sender->getLevel()->getName()]->scenarioManager->rmScenario($args[1]);
                                  foreach($sender->getLevel()->getPlayers() as $p) {
@@ -163,8 +177,9 @@ switch($cmd->getName()){
                  $sender->sendMessage(self::PREFIX . "You're not in a UHC world !");
              }
         } else {
-            if(isset($this->UHCManager->getLevels()[$sender->getLevel()->getName()]) and !isset($this->UHCManager->getStartedGames()[$sender->getLevel()->getName()])) {
-                $sender->sendMessage(self::PREFIX . "Current enabled scenarios : " . implode(", ", $this->UHCManager[$sender->getLevel()->getName()]->scenarioManager->getUsedScenarios()));
+            if(isset($this->UHCManager->getLevels()[$sender->getLevel()->getName()]) and !isset($this->UHCManager->getStartedUHCs()[$sender->getLevel()->getName()])) {
+                $scs = $this->UHCManager->getLevels()[$sender->getLevel()->getName()]->scenarioManager->getUsedScenarios();
+                $sender->sendMessage(self::PREFIX . "Current enabled scenarios : " . implode(", ", $scs));
             }
         }
     break;
@@ -180,28 +195,8 @@ return false;
  # Event Listener !
 
  public function onInteract(\pocketmine\event\player\PlayerInteractEvent $event) {
-    //    echo $event->getBlock()->getId() . "=/=" . Block::SIGN_POST ."=/=" . Block::WALL_SIGN;
-       if($event->getBlock()->getId() == Block::SIGN_POST or $event->getBlock()->getId() == Block::WALL_SIGN) {
-           $t = $event->getBlock()->getLevel()->getTile($event->getBlock());
-        //    echo "Sign.";
-           foreach($this->UHCManager->getLevels() as $class) {
-                  if(str_ireplace("{game}", $class->getName(), $this->getConfig()->get("Game1")) == $t->getText()[0]) {
-                           $lvlex = explode("{level}", $this->getConfig()->get("Game2"));
-                           $lvl = str_ireplace($lvlex[0], "", $t->getText()[1]); 
-                           $lvl = str_ireplace($lvlex[1], "", $lvl);
-                           if($class->getLevel()->getName() == $lvl) {
-                               if($this->UHCManager->getLevels()[$lvl]->isStarted()) {
-                                   $event->getPlayer()->teleport($class->getLevel()->getSafeSpawn());
-                                   $event->getPlayer()->setGamemode(3);
-                               } else {
-                                   $event->getPlayer()->teleport($class->getLevel()->getSafeSpawn());
-                               }
-                           }
-                  }
-           }
-       }
        if(isset($this->UHCManager->getLevels()[$event->getPlayer()->getLevel()->getName()])) {
-           foreach($this->UHCManager->getLevels()[$event->getPlayer()->getLevel()->getName()]->scenarioManager->getScenarios() as $sc) {
+           foreach($this->UHCManager->getLevels()[$event->getPlayer()->getLevel()->getName()]->scenarioManager->getUsedScenarios() as $sc) {
                $sc->onInteract($event);
            }
        }
@@ -210,12 +205,12 @@ return false;
 
    public function onEntityLevelChange(EntityLevelChangeEvent $event) {
        if(isset($this->UHCManager->getLevels()[$event->getOrigin()->getName()]) and $event->getEntity() instanceof Player) {
-           foreach($this->UHCManager->getLevels()[$event->getOrigin()->getName()]->scenarioManager->getScenarios() as $sc) {
-               $sc->onQuit($event->getPlayer());
+           foreach($this->UHCManager->getLevels()[$event->getOrigin()->getName()]->scenarioManager->getUsedScenarios() as $sc) {
+               $sc->onQuit($event->getEntity());
            }
        }
        if(isset($this->UHCManager->getLevels()[$event->getTarget()->getName()]) and $event->getEntity() instanceof Player) {
-           foreach($this->UHCManager->getLevels()[$event->getTarget()->getName()]->scenarioManager->getScenarios() as $sc) {
+           foreach($this->UHCManager->getLevels()[$event->getTarget()->getName()]->scenarioManager->getUsedScenarios() as $sc) {
                $sc->onJoin($event->getEntity());
            }
        }
@@ -224,7 +219,7 @@ return false;
 
    public function onPlayerChat(\pocketmine\event\player\PlayerChatEvent $event) {
        if(isset($this->UHCManager->getLevels()[$event->getPlayer()->getLevel()->getName()])) {
-           foreach($this->UHCManager->getLevels()[$event->getPlayer()->getLevel()->getName()]->scenarioManager->getScenarios() as $sc) {
+           foreach($this->UHCManager->getLevels()[$event->getPlayer()->getLevel()->getName()]->scenarioManager->getUsedScenarios() as $sc) {
                $sc->onPlayerChat($event);
                $sc->onChat($event);
            }
@@ -234,7 +229,7 @@ return false;
 
    public function onPlayerCommandPreprocess(\pocketmine\event\player\PlayerCommandPreprocessEvent $event) {
        if(isset($this->UHCManager->getLevels()[$event->getPlayer()->getLevel()->getName()])) {
-           foreach($this->UHCManager->getLevels()[$event->getPlayer()->getLevel()->getName()]->scenarioManager->getScenarios() as $sc) {
+           foreach($this->UHCManager->getLevels()[$event->getPlayer()->getLevel()->getName()]->scenarioManager->getUsedScenarios() as $sc) {
                $sc->onPlayerCommand($event);
            }
        }
@@ -243,7 +238,7 @@ return false;
 
    public function onPlayerDeath(\pocketmine\event\player\PlayerDeathEvent $event) {
        if(isset($this->UHCManager->getLevels()[$event->getPlayer()->getLevel()->getName()])) {
-           foreach($this->UHCManager->getLevels()[$event->getPlayer()->getLevel()->getName()]->scenarioManager->getScenarios() as $sc) {
+           foreach($this->UHCManager->getLevels()[$event->getPlayer()->getLevel()->getName()]->scenarioManager->getUsedScenarios() as $sc) {
                $sc->onPlayerDeath($event);
                $sc->onDeath($event);
            }
@@ -253,7 +248,7 @@ return false;
 
    public function onPlayerDropItem(\pocketmine\event\player\PlayerDropItemEvent $event) {
        if(isset($this->UHCManager->getLevels()[$event->getPlayer()->getLevel()->getName()])) {
-       foreach($this->UHCManager->getLevels()[$event->getPlayer()->getLevel()->getName()]->scenarioManager->getScenarios() as $sc) {
+       foreach($this->UHCManager->getLevels()[$event->getPlayer()->getLevel()->getName()]->scenarioManager->getUsedScenarios() as $sc) {
                $sc->onPlayerDropItem($event);
                $sc->onPlayerDropItem($event);
            }
@@ -263,7 +258,7 @@ return false;
 
    public function onPlayerMove(\pocketmine\event\player\PlayerMoveEvent $event) {
        if(isset($this->UHCManager->getLevels()[$event->getPlayer()->getLevel()->getName()])) {
-           foreach($this->UHCManager->getLevels()[$event->getPlayer()->getLevel()->getName()]->scenarioManager->getScenarios() as $sc) {
+           foreach($this->UHCManager->getLevels()[$event->getPlayer()->getLevel()->getName()]->scenarioManager->getUsedScenarios() as $sc) {
                $sc->onPlayerMove($event);
                $sc->onMove($event);
            }
@@ -273,7 +268,7 @@ return false;
 
    public function onPlayerItemConsume(\pocketmine\event\player\PlayerItemConsumeEvent $event) {
        if(isset($this->UHCManager->getLevels()[$event->getPlayer()->getLevel()->getName()])) {
-           foreach($this->UHCManager->getLevels()[$event->getPlayer()->getLevel()->getName()]->scenarioManager->getScenarios() as $sc) {
+           foreach($this->UHCManager->getLevels()[$event->getPlayer()->getLevel()->getName()]->scenarioManager->getUsedScenarios() as $sc) {
                $sc->onPlayerItemConsume($event);
                $sc->onItemConsume($event);
            }
@@ -283,7 +278,7 @@ return false;
 
    public function onPlayerItemHeld(\pocketmine\event\player\PlayerItemHeldEvent $event) {
        if(isset($this->UHCManager->getLevels()[$event->getPlayer()->getLevel()->getName()])) {
-           foreach($this->UHCManager->getLevels()[$event->getPlayer()->getLevel()->getName()]->scenarioManager->getScenarios() as $sc) {
+           foreach($this->UHCManager->getLevels()[$event->getPlayer()->getLevel()->getName()]->scenarioManager->getUsedScenarios() as $sc) {
                $sc->onPlayerItemHeld($event);
                $sc->onItemHeld($event);
            }
@@ -293,7 +288,7 @@ return false;
 
    public function onBlockBreak(\pocketmine\event\block\BlockBreakEvent $event) {
        if(isset($this->UHCManager->getLevels()[$event->getPlayer()->getLevel()->getName()])) {
-           foreach($this->UHCManager->getLevels()[$event->getPlayer()->getLevel()->getName()]->scenarioManager->getScenarios() as $sc) {
+           foreach($this->UHCManager->getLevels()[$event->getPlayer()->getLevel()->getName()]->scenarioManager->getUsedScenarios() as $sc) {
                $sc->onBlockBreak($event);
                $sc->onBreak($event);
            }
@@ -303,7 +298,7 @@ return false;
 
    public function onBlockPlace(\pocketmine\event\block\BlockPlaceEvent $event) {
        if(isset($this->UHCManager->getLevels()[$event->getPlayer()->getLevel()->getName()])) {
-           foreach($this->UHCManager->getLevels()[$event->getPlayer()->getLevel()->getName()]->scenarioManager->getScenarios() as $sc) {
+           foreach($this->UHCManager->getLevels()[$event->getPlayer()->getLevel()->getName()]->scenarioManager->getUsedScenarios() as $sc) {
                $sc->onBlockPlace($event);
                $sc->onPlace($event);
            }
@@ -313,7 +308,7 @@ return false;
 
    public function onEntityDamage(\pocketmine\event\entity\EntityDamageEvent $event) {
        if(isset($this->UHCManager->getLevels()[$event->getEntity()->getLevel()->getName()])) {
-           foreach($this->UHCManager->getLevels()[$event->getEntity()->getLevel()->getName()]->scenarioManager->getScenarios() as $sc) {
+           foreach($this->UHCManager->getLevels()[$event->getEntity()->getLevel()->getName()]->scenarioManager->getUsedScenarios() as $sc) {
                $sc->onEntityDamage($event);
            }
        }
@@ -322,7 +317,7 @@ return false;
 
    public function onProjectileLaunch(\pocketmine\event\entity\ProjectileLaunchEvent $event) {
        if(isset($this->UHCManager->getLevels()[$event->getEntity()->getLevel()->getName()])) {
-           foreach($this->UHCManager->getLevels()[$event->getEntity()->getLevel()->getName()]->scenarioManager->getScenarios() as $sc) {
+           foreach($this->UHCManager->getLevels()[$event->getEntity()->getLevel()->getName()]->scenarioManager->getUsedScenarios() as $sc) {
                $sc->onProjectileLaunch($event);
            }
        }
@@ -331,7 +326,7 @@ return false;
 
    public function onProjectileHit(\pocketmine\event\entity\ProjectileHitEvent $event) {
        if(isset($this->UHCManager->getLevels()[$event->getEntity()->getLevel()->getName()])) {
-           foreach($this->UHCManager->getLevels()[$event->getEntity()->getLevel()->getName()]->scenarioManager->getScenarios() as $sc) {
+           foreach($this->UHCManager->getLevels()[$event->getEntity()->getLevel()->getName()]->scenarioManager->getUsedScenarios() as $sc) {
                $sc->onProjectileHit($event);
            }
        }
@@ -340,7 +335,7 @@ return false;
 
    public function onDataPacketReceive(\pocketmine\event\server\DataPacketReceiveEvent $event) {
        if(isset($this->UHCManager->getLevels()[$event->getPlayer()->getLevel()->getName()])) {
-           foreach($this->UHCManager->getLevels()[$event->getPlayer()->getLevel()->getName()]->scenarioManager->getScenarios() as $sc) {
+           foreach($this->UHCManager->getLevels()[$event->getPlayer()->getLevel()->getName()]->scenarioManager->getUsedScenarios() as $sc) {
                $sc->onDataPacketReceive($event);
            }
        }
@@ -349,7 +344,7 @@ return false;
 
    public function onDataPacketSend(\pocketmine\event\server\DataPacketSendEvent $event) {
        if(isset($this->UHCManager->getLevels()[$event->getPlayer()->getLevel()->getName()])) {
-           foreach($this->UHCManager->getLevels()[$event->getPlayer()->getLevel()->getName()]->scenarioManager->getScenarios() as $sc) {
+           foreach($this->UHCManager->getLevels()[$event->getPlayer()->getLevel()->getName()]->scenarioManager->getUsedScenarios() as $sc) {
                $sc->onDataPacketSend($event);
            }
        }
@@ -358,7 +353,7 @@ return false;
 
    public function onServerCommand(\pocketmine\event\server\ServerCommandEvent $event) {
        foreach($this->UHCManager->getLevels() as $lvl => $world) {
-           foreach($world->scenarioManager->getScenarios() as $sc) {
+           foreach($world->scenarioManager->getUsedScenarios() as $sc) {
                $sc->onServerCommand($event);
            }
        }
@@ -366,7 +361,7 @@ return false;
 
    public function onPlayerJoin(\pocketmine\event\player\PlayerJoinEvent $event) {
         if(!isset($this->ft)) {
-            $this->ft = $this->getServer()->getScheduler()->scheduleRepeatingTask(new FetchPlayersTask($this, $this->UHCManager->getLevels()), 10);
+            $this->ft = $this->getServer()->getScheduler()->scheduleRepeatingTask(new FetchPlayersTask($this, $this->UHCManager->getStartedUHCs()), 10);
         }
         if(isset($this->quit[$event->getPlayer()->getName()])) {
                 $quit = explode("/", $this->quit[$event->getPlayer()->getName()]);
@@ -377,7 +372,7 @@ return false;
                 }
         }
        if(isset($this->UHCManager->getLevels()[$event->getPlayer()->getLevel()->getName()])) {
-           foreach($this->UHCManager->getLevels()[$event->getPlayer()->getLevel()->getName()]->scenarioManager->getScenarios() as $sc) {
+           foreach($this->UHCManager->getLevels()[$event->getPlayer()->getLevel()->getName()]->scenarioManager->getUsedScenarios() as $sc) {
                $sc->onJoin($event->getPlayer());
            }
        }
@@ -386,7 +381,7 @@ return false;
 
    public function onPlayerQuit(\pocketmine\event\player\PlayerQuitEvent $event) {
        if(isset($this->UHCManager->getLevels()[$event->getPlayer()->getLevel()->getName()])) {
-           foreach($this->UHCManager->getLevels()[$event->getPlayer()->getLevel()->getName()]->scenarioManager->getScenarios() as $sc) {
+           foreach($this->UHCManager->getLevels()[$event->getPlayer()->getLevel()->getName()]->scenarioManager->getUsedScenarios() as $sc) {
                $sc->onQuit($event->getPlayers());
            }
        }

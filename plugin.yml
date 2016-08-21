@@ -22,6 +22,8 @@ commands:
      permission: uhc.command.scenarios
 permissions:
    uhc.command.main:
+     default: true
+   uhc.command.start&stop:
      default: op
    uhc.command.scenarios:
      default: true

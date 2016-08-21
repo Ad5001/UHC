@@ -12,10 +12,12 @@ use pocketmine\command\Command;
 use pocketmine\command\CommandSender;
 use pocketmine\command\PluginIdentifiableCommand;
 use pocketmine\Server;
+use pocketmine\Player;
 use pocketmine\event\Listener;
 use pocketmine\utils\Config;
 use Ad5001\UHC\scenario\ScenarioInt;
 use Ad5001\UHC\Main;
+use Ad5001\UHC\UHCWorld;
 
 abstract class Scenario implements ScenarioInt, Listener {
     
@@ -25,14 +27,13 @@ abstract class Scenario implements ScenarioInt, Listener {
     
     private $level;
     
-    public function __construct(Server $server, UHCGame $game, UHCWorld $level) {
+    public function __construct(Server $server, UHCWorld $level) {
         $this->server = $server;
-        $this->game = $game;
         $this->level = $level;
     }
     
     
-    public function onStart()
+    public function onStart() {}
     
     
     public function onStop() {}
@@ -42,6 +43,19 @@ abstract class Scenario implements ScenarioInt, Listener {
 
 
     public function onQuit(Player $player) {}
+
+
+    public function getLevel() {
+        return $this->level;
+    }
+
+
+    public function getGame() {
+        if(isset($this->main->UHCManager->getStartedUHCs()[$this->level->getName()])) {
+            return $this->main->UHCManager->getStartedUHCs()[$this->level->getName()];
+        }
+        return null;
+    }
     
 
     public function onInteract(\pocketmine\event\player\PlayerInteractEvent $event) {}
@@ -155,6 +169,6 @@ abstract class Scenario implements ScenarioInt, Listener {
     
     
     public function getScenarioFolder() {
-        return realPath($this->getMain()->getDataFolder() . "scenarios/");
+        return $this->getMain()->getDataFolder() . "scenarios/";
     }
 }

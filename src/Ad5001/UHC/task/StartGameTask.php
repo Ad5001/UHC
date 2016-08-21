@@ -86,7 +86,7 @@ class StartGameTask extends PluginTask {
             }
             break;
             case 0:
-            $this->main->games[$this->world->getLevel()->getName()] = new UHCGame($this->main, $this->world);
+            $this->main->UHCManager->addStartedUHC($this->world->getLevel()->getName(), new UHCGame($this->main, $this->world));
             $this->close();
             $this->seconds = -1;
             break;

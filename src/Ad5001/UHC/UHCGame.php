@@ -96,7 +96,7 @@ class UHCGame implements Listener{
     public function onPlayerDeath(PlayerDeathEvent $event) {
         if($event->getPlayer()->getLevel()->getName() === $this->world->getName() and !$this->cancelled) {
             foreach($event->getPlayer()->getLevel()->getPlayers() as $p) {
-                $p->sendMessage(Main::PREFIX . C::YELLOW . $event->getPlayer()->getName() . " died. " . (count($this->world->getLevel()->getPlayers) - 2)) . " players left !");
+                $p->sendMessage(Main::PREFIX . C::YELLOW . $event->getPlayer()->getName() . " died. " . (count($this->world->getLevel()->getPlayers()) - 1) . " players left !");
             }
             $this->respawn[$event->getPlayer()->getName()] = true;
             $pls = [];
