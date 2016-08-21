@@ -1,4 +1,4 @@
-PLEASE NOTE THAT THE PLUGIN IS ***NOT*** COMPLETE YET! DO NOT USE THIS IN A PRODUCTION ENVIRONNEMENT!    
+# Plugin completed ! Download it from [here](http://projects.ad5001.ga/UHC/download.php?d=UHC_v1.phar&n=UHC_v1.phar)
 
 # UHC
  A highly customisable UHC plugin for Minecraft PE!
@@ -12,8 +12,8 @@ This is a recreation of the well known UHC gamemode for Minecraft PE server soft
  - Scenarios! [What are scenarios](wiki/scenarios)    
     
 Current complete features:
-[WIP] Playing UHC (damage without regen and golden apples)        
+- [x] Playing UHC (damage without regen and golden apples)        
 - [x] MultiWorld compatible     
-[WIP] Scenario working     
-- [x] Full spectator mode     
-[WIP] Events     
+- [x] Scenario working     
+- **[here](https://github.com/Ad5001/SpectatorPlus)** Full spectator mode     
+- [x] Events     
