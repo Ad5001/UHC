@@ -22,7 +22,7 @@ use Ad5001\UHC\Main;
 use Ad5001\UHC\scenario\ScenarioManager;
 
 
-class UHCWorld {
+class UHCWorld implements Listener {
     public function __construct(Plugin $main, Level $level, int $maxplayers, int $radius) {
         $this->p = $main;
         $this->lvl = $level;
@@ -30,6 +30,7 @@ class UHCWorld {
         $this->players = [];
         $this->cfg = $main->getConfig();
         $this->radius = $radius;
+        $main->getServer()->getPluginManager()->registerEvents($this, $main);
         $this->scenarioManager = new ScenarioManager($this->p, $this);
     }
 
@@ -41,6 +42,31 @@ class UHCWorld {
 
     public function isStarted() {
         return isset($this->p->UHCManager->getStartedUHCs()[$this->lvl->getName()]);
+    }
+
+
+    public function onEntityDamage(\pocketmine\event\entity\EntityDamageEvent $event) {
+        if(!$this->isStarted()) {
+            $event->setCancelled();
+        }
+    }
+
+
+    public function onBlockBreak(\pocketmine\event\block\BlockBreakEvent $event) {
+        if(!$this->isStarted()) {
+            if(!$event->getPlayer()->isCreative()) {
+                $event->setCancelled();
+            }
+        }
+    }
+
+
+    public function onBlockPlace(\pocketmine\event\block\BlockPlaceEvent $event) {
+        if(!$this->isStarted()) {
+            if(!$event->getPlayer()->isCreative()) {
+                $event->setCancelled();
+            }
+        }
     }
     
 
@@ -60,18 +86,21 @@ class UHCWorld {
 
     
     public function setPlayers(array $players) {
-        foreach($players as $player) {
+        foreach($this->players as $key => $player) {
             if(!in_array($player, $this->players)){
-                foreach($this->players as $pl) {
-                    $pl->sendMessage(Main::PREFIX . C::YELLOW . "{$player->getName()} left the game.");
-                }
-            }
-        }
-        foreach($this->players as $player) {
-            if(!in_array($player, $players)){
+                $player->sendMessage(Main::PREFIX . C::YELLOW . "You joined the game.");
                 foreach($this->players as $pl) {
                     $pl->sendMessage(Main::PREFIX . C::YELLOW . "{$player->getName()} joined the game.");
-                    $this->getLevel()->addParticle($part = new FloatingTextParticle(new Vector3($this->getLevel()->getSafeSpawn()->x, $this->getLevel()->getSafeSpawn()->y, $this->getLevel()->getSafeSpawn()->z), C::GREEN . "Welcome to the UHC game, {$player->getName()}!\n" . C::GREEN . "Need help? Use /uhc howtoplay.", C::YELLOW . "-=<UHC>=-"), [$pl]);
+                    $this->getLevel()->addParticle($part = new FloatingTextParticle(new Vector3($this->getLevel()->getSafeSpawn()->x, $this->getLevel()->getSafeSpawn()->y, $this->getLevel()->getSafeSpawn()->z), C::GREEN . "Welcome to the UHC game, {$player->getName()}!\n" . C::GREEN . "Need help? Use /uhc howtoplay.", C::YELLOW . "-=<UHC>=-"), [$player]);
+                }
+
+            }
+        }
+        foreach($players as $player) {
+            if(!in_array($player, $players)){
+                $player->sendMessage(Main::PREFIX . C::YELLOW . "You left the game.");
+                foreach($this->players as $pl) {
+                    $pl->sendMessage(Main::PREFIX . C::YELLOW . "{$player->getName()} left the game.");
                 }
             }
         }

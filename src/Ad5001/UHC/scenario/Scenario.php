@@ -140,6 +140,11 @@ abstract class Scenario implements ScenarioInt, Listener {
     }
 
 
+    public static function help() {
+        return "This scenario does not purpose help.";
+    }
+
+
     public function getLogger() {
         return $this->getMain()->getLogger();
     }

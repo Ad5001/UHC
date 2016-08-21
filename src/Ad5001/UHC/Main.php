@@ -33,7 +33,7 @@ use Ad5001\UHC\event\GameStartEvent;
 use Ad5001\UHC\event\GameFinishEvent;
 
 class Main extends PluginBase implements Listener{
-    const PREFIX = C::GOLD . "[" . C::DARK_RED . "UHC" . C::GOLD . "] ". C::RESET;
+    const PREFIX = C::GOLD . "[" . C::DARK_RED . "UHC" . C::GOLD . "] ". C::RESET . C::WHITE;
     
     
     
@@ -44,7 +44,7 @@ class Main extends PluginBase implements Listener{
                     $event->setCancelled();
                 }
             } elseif($event->getTarget()->getName() === $world->getName() and isset($this->UHCManager->getStartedUHCs()[$world->getName()]) and !isset($this->quit[$event->getEntity()])) {
-                $event->getPlayer()->setGamemode(3);
+                $event->getEntity()->setGamemode(3);
             } elseif($event->getTarget()->getName() === $world->getName() and isset($this->UHCManager->getStartedUHCs()[$world->getName()]) and isset($this->quit[$event->getEntity()])) {
                 $quit = explode("/", $this->quit[$event->getEntity()]);
                 if($quit[3] === $world->getName()) {
@@ -121,6 +121,34 @@ switch($cmd->getName()){
             }
             return true;
             break;
+            case "howtoplay":
+            case "?":
+            case "help":
+            if(!isset($args[1])) {
+                $sender->sendMessage(self::PREFIX . "Welcome to UHC's help ! WHat do you want to know about UHC?\n" . self::PREFIX . "- The game (/uhc howtoplay game)\n" . self::PREFIX . "- The commands (/uhc howtoplay commands)\n" . self::PREFIX . "- The scenarios (/uhc howtoplay scenarios)\n");
+            } else {
+                switch(strtolower($args[1])) {
+                    case "game":
+                    $sender->sendMessage(self::PREFIX . "UHC (aka Ultra HardCord) is a new difficulty where it's hardcord but with no health regen exept for golden apples and potions and only 1 life. The most popular 'UHC' Game is a PvP (Player versus Player) game where you're in this mode and you need to kill other players.\n" . self::PREFIX . "What do you want to know next?\n" . self::PREFIX . "- The commands (/uhc howtoplay commands)\n" . self::PREFIX . "- The scenarios (/uhc howtoplay scenarios)\n");
+                    break;
+                    case "commands":
+                    $sender->sendMessage(self::PREFIX . "This UHC Plugin have special commands. For players: /scenarios will give you the list of the current enabled scenarios. " . ($sender->isOp() ? "For OP: '/uhc start' start the uhc. '/uhc stop' finish it. '/scenarios add <scenario>' adds a scenario. '/scenario rm <scenario>' remove a scenario. '/scenarios list' gives you the list of installed scenarios.\n" : "\n") . self::PREFIX . "What do you want to know next?\n" . self::PREFIX . "- The game (/uhc howtoplay game)\n" . self::PREFIX . "- The scenarios (/uhc howtoplay scenarios)");
+                    break;
+                    case "scenarios":
+                    $sender->sendMessage(self::PREFIX . "Scenarios are 'addons' to the UHC that modify some mechanics or some parts of the game. You can download them or create them yourself. Look at ccommands if you want to know how to add a scenario to a game and look at https://github.com/Ad5001/UHC/wiki/What-are-Scenarios%3F. If you want to know more about a scenario, use /uhc howtoplay <scenario name>.\n" . self::PREFIX . "What do you want to know next?\n"  . self::PREFIX . "- The game (/uhc howtoplay game)\n" . self::PREFIX . "- The commands (/uhc howtoplay commands)\n");
+                    break;
+                    default:
+                    if(in_array($this->UHCManager->getLevels()[$sender->getLevel()->getName()]->scenarioManager->getScenarios(), $args[0])) {
+                        $sender->sendMessage(self::PREFIX . "Help for $args[0]. " . $args[0]::help);
+                    } else {
+                        $sender->sendMessage(self::PREFIX . "No help for $args[0]");
+                    }
+                    break;
+                    
+                }
+            }
+            return true;
+            break;
         }
     }
     break;
@@ -182,6 +210,7 @@ switch($cmd->getName()){
                 $sender->sendMessage(self::PREFIX . "Current enabled scenarios : " . implode(", ", $scs));
             }
         }
+        return true;
     break;
 }
 return false;

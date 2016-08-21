@@ -37,6 +37,7 @@ class UHCGame implements Listener{
     public function __construct(Plugin $plugin, UHCWorld $world) {
         $this->m = $plugin;
         $this->world = $world;
+        $world->getLevel()->setTime(0);
         $plugin->getServer()->getPluginManager()->registerEvents($this, $plugin);
         $this->players = $world->getLevel()->getPlayers();
         $event = new GameStartEvent($this, $world, $this->players);
@@ -48,6 +49,9 @@ class UHCGame implements Listener{
         } else {
             $radius = $world->radius;
             foreach($this->players as $player) {
+                $player->getInventory()->clearAll();
+                $player->setGamemode(0);
+                for($e = 1; $e < 24; $e++) {$player->removeEffect($e);}
                 $x = rand($radius + $world->getLevel()->getSpawnLocation()->x, $world->getLevel()->getSpawnLocation()->x - $radius);
                 $z = rand($radius + $world->getLevel()->getSpawnLocation()->z, $world->getLevel()->getSpawnLocation()->z - $radius);
                 $pos = new Vector3($x, 128, $z);
@@ -79,8 +83,7 @@ class UHCGame implements Listener{
     
     public function onRespawn(PlayerRespawnEvent $event) {
         if(isset($this->respawn[$event->getPlayer()->getName()]) and !$this->cancelled) {
-            $player->teleport($this->world->getLevel());
-            $player->setGamemode(3);
+            $event->getPlayer()->setGamemode(3);
             unset($this->respawn[$event->getPlayer()->getName()]);
         }
     }
