@@ -1,5 +1,6 @@
 LobbyWorld: world
 worlds:
    uhc:
-        maxplayers: 8
-        radius: 1000
+     maxplayers: 8
+     radius: 1000
+     default_scenarios: [UHCWorldReseter]

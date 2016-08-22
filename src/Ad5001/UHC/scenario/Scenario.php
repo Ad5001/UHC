@@ -173,7 +173,7 @@ abstract class Scenario implements ScenarioInt, Listener {
     
     
     
-    public function getScenarioFolder() {
+    public function getScenariosFolder() {
         return $this->getMain()->getDataFolder() . "scenarios/";
     }
 }

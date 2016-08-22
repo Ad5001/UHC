@@ -93,7 +93,7 @@ class Main extends PluginBase implements Listener{
 
 
  public function onCommand(CommandSender $sender, Command $cmd, $label, array $args){
-switch($cmd->getName()){
+  switch($cmd->getName()){
     case "uhc":
     if(isset($args[0]) and $sender instanceof Player) {
         switch($args[0]) {
@@ -115,7 +115,7 @@ switch($cmd->getName()){
                 foreach($sender->getLevel()->getPlayers() as $player) {
                     $player->sendMessage(self::PREFIX . "Starting game...");
                 }
-                $this->stopUHC($sender->getLevel());
+                $this->UHCManager->stopUHC($sender->getLevel());
             } else {
                 $sender->sendMessage("You are not in a UHC world or UHC is already started");
             }

@@ -33,7 +33,7 @@ interface ScenarioInt {
     
     
     /* Get the scenario folder */
-    public function getScenarioFolder();
+    public function getScenariosFolder();
     
     
     /* Reload the config */

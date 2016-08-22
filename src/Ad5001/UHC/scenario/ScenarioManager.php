@@ -42,6 +42,13 @@ class ScenarioManager {
                 @mkdir($this->main->getDataFolder() . "scenarios/" . explode("\\", $classn)[count(explode("\\", $classn)) - 1]);
             }
         }
+        if(isset($this->main->getConfig()->get($game->getLevel()->getName())["default_scenarios"])) {
+            if(is_array($this->main->getConfig()->get($game->getLevel()->getName())["default_scenarios"])){
+                foreach($this->main->getConfig()->get($game->getLevel()->getName())["default_scenarios"] as $sc) {
+                    $this->addScenario($sc);
+                }
+            }
+        }
     }
 
 

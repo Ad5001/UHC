@@ -1,11 +1,12 @@
 ---
+LobbyWorld: world
 # Set your worlds here !
 worlds: 
 # Example:
   # world:
      # radius: 1000
      # maxplayers: 32
-
+     # default_scenarios: []
      
 # Will be added if you add scenarios
 scenarios: []
