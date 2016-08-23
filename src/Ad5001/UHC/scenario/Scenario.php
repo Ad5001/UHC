@@ -136,7 +136,7 @@ abstract class Scenario implements ScenarioInt, Listener {
 
 
     public function getServer() {
-        return $this->main->getServer();
+        return $this->getMain()->getServer();
     }
 
 

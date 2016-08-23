@@ -53,11 +53,11 @@ class UHCManager {
 
 
     public function stopUHC(Level $level) {
-        if(isset($this->startedgames[$level->getName()])) {
-            unset($this->startedgames[$level->getName()]);
+        if(isset($this->getStartedUHCs()[$level->getName()])) {
             foreach($this->levels[$level->getName()]->scenarioManager->getUsedScenarios() as $sc) {
-                $sc->onQuit();
+                $sc->onStop();
             }
+            unset($this->startedgames[$level->getName()]);
             return true;
         }
         return false;

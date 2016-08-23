@@ -16,7 +16,6 @@ use pocketmine\event\player\PlayerChatEvent;
 use pocketmine\event\player\PlayerQuitEvent;
 use pocketmine\event\player\PlayerRespawnEvent;
 use pocketmine\event\entity\EntityRegainHealthEvent;
-use Ad5001\UHC\event\GameStopEvent;
 use pocketmine\level\Level;
 use pocketmine\plugin\Plugin;
 use pocketmine\math\Vector3;
@@ -29,6 +28,7 @@ use Ad5001\UHC\UHCWorld;
 use Ad5001\UHC\task\StopResTask;
 use Ad5001\UHC\Main;
 use Ad5001\UHC\event\GameStartEvent;
+use Ad5001\UHC\event\GameStopEvent;
 
 
 
@@ -39,8 +39,7 @@ class UHCGame implements Listener{
         $this->world = $world;
         $world->getLevel()->setTime(0);
         $plugin->getServer()->getPluginManager()->registerEvents($this, $plugin);
-        $this->players = $world->getLevel()->getPlayers();
-        $event = new GameStartEvent($this, $world, $this->players);
+        $event = new GameStartEvent($this, $world, $world->getLevel()->getPlayers());
         $this->m->getServer()->getPluginManager()->callEvent($event);
         $this->cancelled = false;
         $this->kills = [];
@@ -48,7 +47,7 @@ class UHCGame implements Listener{
             $this->cancelled = true;
         } else {
             $radius = $world->radius;
-            foreach($this->players as $player) {
+            foreach($world->getLevel()->getPlayers() as $player) {
                 $player->getInventory()->clearAll();
                 $player->setGamemode(0);
                 for($e = 1; $e < 24; $e++) {$player->removeEffect($e);}
@@ -103,7 +102,7 @@ class UHCGame implements Listener{
             }
             $this->respawn[$event->getPlayer()->getName()] = true;
             $pls = [];
-            foreach($this->players as $pl) {
+            foreach($event->getPlayer()->getLevel()->getPlayers() as $pl) {
                 array_push($pls, $pl);
             }
             $cause = $event->getEntity()->getLastDamageCause();
@@ -129,18 +128,25 @@ class UHCGame implements Listener{
                     $this->kills[C::GREEN . "P" . C::BLUE . "v" . C::RED . "E"] = 1;
                 }
             }
-            if(count($pls === 1)) {
-                $this->stop($pls[0]);
+            if(count($pls) == 2) {
+                foreach($pls as $p) {
+                    if($p !== $event->getPlayer()) {
+                        $this->stop($p);
+                    }
+                }
+            } elseif(count($pls) == 1) {
+                $this->stop($event->getPlayer());
             }
         }
     }
     
     
     public function stop(Player $winner) {
-        if(!$this->cancelled) {
+        $this->m->getServer()->getPluginManager()->callEvent($ev = new GameStopEvent($this, $this->world, $winner));
+        if(!$ev->cancelled) {
             $this->m->getServer()->getPluginManager()->callEvent($event = new GameStopEvent($this, $this->world, $winner));
             if(!$event->isCancelled()) {
-                foreach($this->players as $player) {
+                foreach($winner->getLevel()->getPlayers() as $player) {
                     $player->sendMessage(Main::PREFIX . C::YELLOW . $winner->getName() . " won the game ! Teleporting back to lobby...");
                     $player->teleport($this->m->getServer()->getLevelByName($this->m->getConfig()->get("LobbyWorld"))->getSafeSpawn());
                 }

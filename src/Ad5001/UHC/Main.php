@@ -39,19 +39,22 @@ class Main extends PluginBase implements Listener{
     
     public function onLevelChange(EntityLevelChangeEvent $event) {
         foreach($this->UHCManager->getLevels() as $world) {
-            if($event->getTarget()->getName() === $world->getName() and !isset($this->UHCManager->getStartedUHCs()[$world->getName()])) {
+            if($event->getTarget()->getName() == $world->getName() and !isset($this->UHCManager->getStartedUHCs()[$world->getName()])) {
                 if(count($world->getLevel()->getPlayers()) > $world->maxplayers) {
                     $event->setCancelled();
                 }
-            } elseif($event->getTarget()->getName() === $world->getName() and isset($this->UHCManager->getStartedUHCs()[$world->getName()]) and !isset($this->quit[$event->getEntity()])) {
+            } elseif($event->getTarget()->getName() == $world->getName() and isset($this->UHCManager->getStartedUHCs()[$world->getName()]) and !isset($this->quit[$event->getEntity()->getName()])) {
                 $event->getEntity()->setGamemode(3);
-            } elseif($event->getTarget()->getName() === $world->getName() and isset($this->UHCManager->getStartedUHCs()[$world->getName()]) and isset($this->quit[$event->getEntity()])) {
-                $quit = explode("/", $this->quit[$event->getEntity()]);
-                if($quit[3] === $world->getName()) {
-                    $event->getPlayer()->teleport(new Vector3($quit[0], $quit[1], $quit[2]));
+            } elseif($event->getTarget()->getName() == $world->getName() and isset($this->UHCManager->getStartedUHCs()[$world->getName()]) and isset($this->quit[$event->getEntity()->getName()])) {
+                $this->quit = explode("/", $this->quit[$event->getEntity()->getName()]);
+                if($this->quit[3] === $world->getName()) {
+                    $event->getEntity()->teleport(new \pocketmine\level\Location($this->quit[0], $this->quit[1], $this->quit[2], $event->getTarget()));
                     foreach($world->getLevel()->getPlayers() as $player) {
                         $player->sendMessage(self::PREFIX . C::GREEN . "{$event->getPlayer()->getName()} back to game !");
                     }
+                    $event->setCancelled();
+                } else {
+                    $event->getEntity()->setGamemode(3);
                 }
             }
         }
@@ -138,10 +141,10 @@ class Main extends PluginBase implements Listener{
                     $sender->sendMessage(self::PREFIX . "Scenarios are 'addons' to the UHC that modify some mechanics or some parts of the game. You can download them or create them yourself. Look at ccommands if you want to know how to add a scenario to a game and look at https://github.com/Ad5001/UHC/wiki/What-are-Scenarios%3F. If you want to know more about a scenario, use /uhc howtoplay <scenario name>.\n" . self::PREFIX . "What do you want to know next?\n"  . self::PREFIX . "- The game (/uhc howtoplay game)\n" . self::PREFIX . "- The commands (/uhc howtoplay commands)\n");
                     break;
                     default:
-                    if(in_array($this->UHCManager->getLevels()[$sender->getLevel()->getName()]->scenarioManager->getScenarios(), $args[0])) {
-                        $sender->sendMessage(self::PREFIX . "Help for $args[0]. " . $args[0]::help);
+                    if(in_array($args[1], $this->UHCManager->getLevels()[$sender->getLevel()->getName()]->scenarioManager->getScenarios())) {
+                        $sender->sendMessage(self::PREFIX . "Help for $args[1]. " . $args[1]::help());
                     } else {
-                        $sender->sendMessage(self::PREFIX . "No help for $args[0]");
+                        $sender->sendMessage(self::PREFIX . "No help for $args[1]");
                     }
                     break;
                     
@@ -234,6 +237,7 @@ return false;
 
    public function onEntityLevelChange(EntityLevelChangeEvent $event) {
        if(isset($this->UHCManager->getLevels()[$event->getOrigin()->getName()]) and $event->getEntity() instanceof Player) {
+           $this->quit[$event->getEntity()->getName()] = $event->getEntity()->x . "/" . $event->getEntity()->y . "/" . $event->getEntity()->z. "/" . $event->getOrigin()->getName();
            foreach($this->UHCManager->getLevels()[$event->getOrigin()->getName()]->scenarioManager->getUsedScenarios() as $sc) {
                $sc->onQuit($event->getEntity());
            }
@@ -392,11 +396,11 @@ return false;
         if(!isset($this->ft)) {
             $this->ft = $this->getServer()->getScheduler()->scheduleRepeatingTask(new FetchPlayersTask($this, $this->UHCManager->getStartedUHCs()), 10);
         }
-        if(isset($this->quit[$event->getPlayer()->getName()])) {
-                $quit = explode("/", $this->quit[$event->getPlayer()->getName()]);
-                $event->getPlayer()->teleport($this->getServer()->getLevelByName($quit[4]));
-                $event->getPlayer()->teleport(new Vector3($quit[0], $quit[1], $quit[2]));
-                foreach($this->getServer()->getLevelByName($quit[4])->getLevel()->getPlayers() as $player) {
+        if(isset($this->quit[$event->getPlayer()->getName()]) and $event->getPlayer()->getLevel()->getName() == $this->quit[3]) {
+                $this->quit = explode("/", $this->quit[$event->getPlayer()->getName()]);
+                $event->getPlayer()->teleport($this->getServer()->getLevelByName($this->quit[3]));
+                $event->getPlayer()->teleport(new Vector3($this->quit[0], $this->quit[1], $this->quit[2]));
+                foreach($this->getServer()->getLevelByName($this->quit[3])->getLevel()->getPlayers() as $player) {
                     $player->sendMessage(self::PREFIX . C::GREEN . "{$event->getPlayer()->getName()} back to game !");
                 }
         }
@@ -410,8 +414,9 @@ return false;
 
    public function onPlayerQuit(\pocketmine\event\player\PlayerQuitEvent $event) {
        if(isset($this->UHCManager->getLevels()[$event->getPlayer()->getLevel()->getName()])) {
+           $this->quit[$event->getPlayer()->getName()] = $event->getPlayer()->x . "/" . $event->getPlayer()->y . "/" . $event->getPlayer()->z. "/" . $event->getPlayer()->getLevel()->getName();
            foreach($this->UHCManager->getLevels()[$event->getPlayer()->getLevel()->getName()]->scenarioManager->getUsedScenarios() as $sc) {
-               $sc->onQuit($event->getPlayers());
+               $sc->onQuit($event->getPlayer());
            }
        }
    }
