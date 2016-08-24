@@ -1,0 +1,7 @@
+{
+    "version": "0.1.0",
+    "command": "start",
+    "isShellCommand": true,
+    "args": ["cmd", "/C", "C:\\Program Files\\Git\\commit-signed.cmd"],
+    "showOutput": "always"
+}
