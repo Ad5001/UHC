@@ -17,7 +17,7 @@ interface ScenarioInt {
     
     
      /* When the scenario is stoping (end of UHC) */
-    public function onStop();
+    public function onStop(\pocketmine\Player $player);
     
     
      /* Getting the main methods */

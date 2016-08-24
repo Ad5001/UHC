@@ -20,6 +20,7 @@ commands:
      description: Manage UHC scenarios
      usage: "/scenarios [add | remove | list] [scenario]"
      permission: uhc.command.scenarios
+     aliases: [scs]
 permissions:
    uhc.command.main:
      default: true

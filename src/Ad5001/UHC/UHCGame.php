@@ -144,12 +144,10 @@ class UHCGame implements Listener{
     public function stop(Player $winner) {
         $this->m->getServer()->getPluginManager()->callEvent($ev = new GameStopEvent($this, $this->world, $winner));
         if(!$ev->cancelled) {
-            $this->m->getServer()->getPluginManager()->callEvent($event = new GameStopEvent($this, $this->world, $winner));
-            if(!$event->isCancelled()) {
-                foreach($winner->getLevel()->getPlayers() as $player) {
-                    $player->sendMessage(Main::PREFIX . C::YELLOW . $winner->getName() . " won the game ! Teleporting back to lobby...");
-                    $player->teleport($this->m->getServer()->getLevelByName($this->m->getConfig()->get("LobbyWorld"))->getSafeSpawn());
-                }
+            foreach($winner->getLevel()->getPlayers() as $player) {
+                $player->sendMessage(Main::PREFIX . C::YELLOW . $winner->getName() . " won the game ! Teleporting back to lobby...");
+                $player->teleport($this->m->getServer()->getLevelByName($this->m->getConfig()->get("LobbyWorld"))->getSafeSpawn());
+                $this->m->UHCManager->stopUHC($this->world->getLevel(), $winner);
             }
         }
     }

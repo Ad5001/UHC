@@ -36,7 +36,7 @@ abstract class Scenario implements ScenarioInt, Listener {
     public function onStart() {}
     
     
-    public function onStop() {}
+    public function onStop(Player $player) {}
 
 
     public function onJoin(Player $player) {}

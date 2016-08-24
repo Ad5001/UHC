@@ -52,12 +52,19 @@ class UHCManager {
 
 
 
-    public function stopUHC(Level $level) {
-        if(isset($this->getStartedUHCs()[$level->getName()])) {
+    public function stopUHC(Level $level, Player $player) {
+        if(isset($this->startedgames[$level->getName()])) {
             foreach($this->levels[$level->getName()]->scenarioManager->getUsedScenarios() as $sc) {
-                $sc->onStop();
+                $sc->onStop($player);
             }
-            unset($this->startedgames[$level->getName()]);
+            $started = [];
+            foreach($this->startedgames as $name => $game) {
+                if($name !== $level->getName()) {
+                    $started[$name] = $game;
+                }
+            }
+            $this->startedgames = $started;
+            $this->main->getLogger()->info("Game " . $level->getName() . " stoped");
             return true;
         }
         return false;

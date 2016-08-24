@@ -20,6 +20,8 @@ class GameStopEvent extends UHCEvent implements Cancellable {
 
     public static $handlerList = null;
 
+    public $cancelled = false;
+
 
 
     public function __construct($game, $world, $winner) {
