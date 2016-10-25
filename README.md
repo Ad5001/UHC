@@ -17,3 +17,16 @@ Current complete features:
 - [x] Scenario working     
 - **[here](https://github.com/Ad5001/SpectatorPlus)** Full spectator mode     
 - [x] Events     
+     
+# Config example:
+```yaml
+# Your lobby world
+LobbyWorld: world
+worlds:
+   # Your UHC world
+   uhc:
+     name: uhc
+     maxplayers: 8
+     radius: 1000
+     default_scenarios: [UHCWorldReseter]
+```
