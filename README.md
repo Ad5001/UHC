@@ -1,3 +1,5 @@
+## This repository was moved to [git.ad5001.eu](https://git.ad5001.eu/Ad5001/UHC)
+
 # Plugin completed ! Download it from [here](http://projects.ad5001.ga/UHC/download.php?d=UHC_v1.phar&n=UHC_v1.phar)
 
 # UHC
